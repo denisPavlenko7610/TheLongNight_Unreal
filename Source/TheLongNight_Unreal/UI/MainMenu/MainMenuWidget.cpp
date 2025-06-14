@@ -2,7 +2,6 @@
 
 #include "Components/Button.h"
 #include "Kismet/GameplayStatics.h"
-#include "UI/HUD/MainHUD.h"
 
 void UMainMenuWidget::NativeOnInitialized()
 {
