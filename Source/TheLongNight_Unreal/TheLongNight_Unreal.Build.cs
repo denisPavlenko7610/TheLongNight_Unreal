@@ -17,15 +17,15 @@ public class TheLongNight_Unreal : ModuleRules
 			"AIModule",
 			"StateTreeModule",
 			"GameplayStateTreeModule",
-			"UMG"
+			"UMG",
+			"Slate",
+			"SlateCore"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[] { });
 
 		PublicIncludePaths.AddRange(new string[] {
 			"TheLongNight_Unreal",
-			"TheLongNight_Unreal/Variant_Horror",
-			"TheLongNight_Unreal/Variant_Shooter",
 			"TheLongNight_Unreal/Variant_Shooter/AI"
 		});
 

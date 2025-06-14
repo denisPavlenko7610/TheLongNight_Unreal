@@ -15,7 +15,6 @@ class ATheLongNight_UnrealGameMode : public AGameModeBase
 	GENERATED_BODY()
 
 public:
-	ATheLongNight_UnrealGameMode();
 };
 
 
