@@ -4,17 +4,18 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
-#include "TheLongNight_UnrealGameMode.generated.h"
+#include "LevelGameMode.generated.h"
 
 /**
  *  Simple GameMode for a first person game
  */
 UCLASS(abstract)
-class ATheLongNight_UnrealGameMode : public AGameModeBase
+class THELONGNIGHT_UNREAL_API ALevelGameMode : public AGameModeBase
 {
 	GENERATED_BODY()
 
 public:
+	virtual void BeginPlay() override;
 };
 
 
