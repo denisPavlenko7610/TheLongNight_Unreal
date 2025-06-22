@@ -2,21 +2,30 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "MainMenuWidget.generated.h"
+#include "PauseMenuWidget.generated.h"
 
 class UMenuButtonWidget;
 class UButton;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnResumeClicked);
+
 UCLASS()
-class THELONGNIGHT_UNREAL_API UMainMenuWidget : public UUserWidget
+class THELONGNIGHT_UNREAL_API UPauseMenuWidget : public UUserWidget
 {
 	GENERATED_BODY()
-
+public:
+	UPROPERTY(BlueprintAssignable, Category = "Pause")
+	FOnResumeClicked OnResumeClickedDelegate;
+	
 protected:
 	virtual void NativeOnInitialized() override;
 
+private:
 	UPROPERTY(meta = (BindWidget))
-	UButton* NewButton;
+	UButton* ResumeButton;
+
+	UPROPERTY(meta = (BindWidget))
+	UButton* SaveButton;
 
 	UPROPERTY(meta = (BindWidget))
 	UButton* LoadButton;
@@ -28,7 +37,10 @@ protected:
 	UButton* ExitButton;
 
 	UFUNCTION()
-	void NewGame();
+	void ResumeGame();
+
+	UFUNCTION()
+	void SaveGame();
 
 	UFUNCTION()
 	void LoadGame();
@@ -37,5 +49,5 @@ protected:
 	void Options();
 
 	UFUNCTION()
-	void Exit();
+	void HandleExit();
 };

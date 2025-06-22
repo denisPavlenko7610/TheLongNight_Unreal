@@ -7,36 +7,36 @@ void UMainMenuWidget::NativeOnInitialized()
 {
 	Super::NativeOnInitialized();
 
-	if (NewGameButton)
-		NewGameButton->OnClicked.AddDynamic(this, &UMainMenuWidget::HandleNewGame);
+	if (NewButton)
+		NewButton->OnClicked.AddDynamic(this, &UMainMenuWidget::NewGame);
 
-	if (LoadGameButton)
-		LoadGameButton->OnClicked.AddDynamic(this, &UMainMenuWidget::HandleLoadGame);
+	if (LoadButton)
+		LoadButton->OnClicked.AddDynamic(this, &UMainMenuWidget::LoadGame);
 
 	if (OptionsButton)
-		OptionsButton->OnClicked.AddDynamic(this, &UMainMenuWidget::HandleOptions);
+		OptionsButton->OnClicked.AddDynamic(this, &UMainMenuWidget::Options);
 
 	if (ExitButton)
-		ExitButton->OnClicked.AddDynamic(this, &UMainMenuWidget::HandleExit);
+		ExitButton->OnClicked.AddDynamic(this, &UMainMenuWidget::Exit);
 }
 
-void UMainMenuWidget::HandleNewGame()
+void UMainMenuWidget::NewGame()
 {
 	UGameplayStatics::OpenLevel(this, "Game");
 	RemoveFromParent();
 }
 
-void UMainMenuWidget::HandleLoadGame()
+void UMainMenuWidget::LoadGame()
 {
 	UE_LOG(LogTemp, Log, TEXT("Load Game Clicked"));
 }
 
-void UMainMenuWidget::HandleOptions()
+void UMainMenuWidget::Options()
 {
 	UE_LOG(LogTemp, Log, TEXT("Options Clicked"));
 }
 
-void UMainMenuWidget::HandleExit()
+void UMainMenuWidget::Exit()
 {
 	UKismetSystemLibrary::QuitGame(this, nullptr, EQuitPreference::Quit, true);
 }

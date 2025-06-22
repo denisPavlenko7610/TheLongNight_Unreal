@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
-#include "TheLongNight_UnrealCharacter.generated.h"
+#include "SurvivePlayer.generated.h"
 
 class UInputComponent;
 class USkeletalMeshComponent;
@@ -15,80 +15,62 @@ struct FInputActionValue;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
-/**
- *  A basic first person character
- */
 UCLASS(abstract)
-class ATheLongNight_UnrealCharacter : public ACharacter
+class ASurvivePlayer : public ACharacter
 {
 	GENERATED_BODY()
-
-	/** Pawn mesh: first person view (arms; seen only by self) */
+	
+public:
+	ASurvivePlayer();
+	
+	USkeletalMeshComponent* GetFirstPersonMesh() const { return FirstPersonMesh; }
+	UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components", meta = (AllowPrivateAccess = "true"))
 	USkeletalMeshComponent* FirstPersonMesh;
 
-	/** First person camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components", meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FirstPersonCameraComponent;
 
 protected:
 
-	/** Jump Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category ="Input")
 	UInputAction* JumpAction;
 
-	/** Move Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category ="Input")
 	UInputAction* MoveAction;
 
-	/** Look Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category ="Input")
-	class UInputAction* LookAction;
+	UInputAction* SprintAction;
 
-	/** Mouse Look Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category ="Input")
-	class UInputAction* MouseLookAction;
-	
-public:
-	ATheLongNight_UnrealCharacter();
+	UInputAction* LookAction;
 
-protected:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category ="Input")
+	UInputAction* MouseLookAction;
 
-	/** Called from Input Actions for movement input */
 	void MoveInput(const FInputActionValue& Value);
-
-	/** Called from Input Actions for looking input */
 	void LookInput(const FInputActionValue& Value);
+	void StartSprinting();
+	void StopSprinting();
+	void UpdateMovementSpeed();
 
-	/** Handles aim inputs from either controls or UI interfaces */
+	virtual void SetupPlayerInputComponent(UInputComponent* InputComponent) override;
+
 	UFUNCTION(BlueprintCallable, Category="Input")
 	virtual void DoAim(float Yaw, float Pitch);
 
-	/** Handles move inputs from either controls or UI interfaces */
 	UFUNCTION(BlueprintCallable, Category="Input")
 	virtual void DoMove(float Right, float Forward);
 
-	/** Handles jump start inputs from either controls or UI interfaces */
 	UFUNCTION(BlueprintCallable, Category="Input")
 	virtual void DoJumpStart();
 
-	/** Handles jump end inputs from either controls or UI interfaces */
 	UFUNCTION(BlueprintCallable, Category="Input")
 	virtual void DoJumpEnd();
 
-protected:
-
-	/** Set up input action bindings */
-	virtual void SetupPlayerInputComponent(UInputComponent* InputComponent) override;
-	
-
-public:
-
-	/** Returns the first person mesh **/
-	USkeletalMeshComponent* GetFirstPersonMesh() const { return FirstPersonMesh; }
-
-	/** Returns first person camera component **/
-	UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }
-
+	float _walkSpeed = 600.0f;
+	float _sprintSpeed = 1200.0f;
+	bool _isSprinting;
 };
 

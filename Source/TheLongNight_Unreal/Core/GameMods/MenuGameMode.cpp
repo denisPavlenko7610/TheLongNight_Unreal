@@ -11,17 +11,12 @@ AMenuGameMode::AMenuGameMode()
 void AMenuGameMode::BeginPlay()
 {
 	Super::BeginPlay();
-
-	APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
-	if (!MainMenuWidgetClass)
-	{
-		return;
-	}
 	
 	if (UUserWidget* Menu = CreateWidget<UUserWidget>(GetWorld(), MainMenuWidgetClass))
 	{
 		Menu->AddToViewport();
-			
+		
+		APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
 		PlayerController->SetShowMouseCursor(true);
 		PlayerController->SetInputMode(FInputModeUIOnly());
 	}
