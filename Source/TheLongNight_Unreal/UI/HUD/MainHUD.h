@@ -9,6 +9,15 @@ class THELONGNIGHT_UNREAL_API AMainHUD : public AHUD
 {
 	GENERATED_BODY()
 
+public:
+	UPROPERTY(EditAnywhere, Category="UI")
+	TSubclassOf<UUserWidget> HUDWidgetClass;
+
 protected:
-	
+	bool AddHudWidget();
+	virtual void BeginPlay() override;
+
+private:
+	UPROPERTY()
+	UUserWidget* HUDWidgetInstance;
 };

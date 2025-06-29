@@ -1,4 +1,3 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "SurvivePlayer.h"
 #include "Animation/AnimInstance.h"
@@ -7,6 +6,7 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "EnhancedInputComponent.h"
 #include "InputActionValue.h"
+#include "PlayerInteractionComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
@@ -30,6 +30,8 @@ ASurvivePlayer::ASurvivePlayer()
 	FirstPersonCameraComponent->FirstPersonFieldOfView = 70.0f;
 	FirstPersonCameraComponent->FirstPersonScale = 0.6f;
 
+	PlayerInteractionComponent = CreateDefaultSubobject<UPlayerInteractionComponent>(TEXT("Player interaction component"));
+	
 	GetMesh()->SetOwnerNoSee(true);
 	GetMesh()->FirstPersonPrimitiveType = EFirstPersonPrimitiveType::WorldSpaceRepresentation;
 

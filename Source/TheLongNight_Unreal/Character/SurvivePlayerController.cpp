@@ -8,9 +8,9 @@
 #include "Engine/LocalPlayer.h"
 #include "InputMappingContext.h"
 #include "TheLongNight_UnrealCameraManager.h"
-#include "Systems/PauseSubsystem.h"
+#include "Systems/Pause/PauseSubsystem.h"
 
-ASurvivePlayerController::ASurvivePlayerController()
+ASurvivePlayerController::ASurvivePlayerController(): PauseAction(nullptr)
 {
 	PlayerCameraManagerClass = ATheLongNight_UnrealCameraManager::StaticClass();
 }
@@ -19,7 +19,8 @@ void ASurvivePlayerController::SetupInputComponent()
 {
 	Super::SetupInputComponent();
 
-	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer()))
+	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(
+		GetLocalPlayer()))
 	{
 		for (UInputMappingContext* CurrentContext : PlayerMappingContext)
 		{
@@ -35,7 +36,8 @@ void ASurvivePlayerController::SetupInputComponent()
 		{
 			if (PauseAction)
 			{
-				EnhancedInputComponent->BindAction(PauseAction, ETriggerEvent::Started, this, &ASurvivePlayerController::OnPausePressed);
+				EnhancedInputComponent->BindAction(PauseAction, ETriggerEvent::Started, this,
+				                                   &ASurvivePlayerController::OnPausePressed);
 			}
 		}
 	}

@@ -7,6 +7,7 @@
 #include "Logging/LogMacros.h"
 #include "SurvivePlayer.generated.h"
 
+class UPlayerInteractionComponent;
 class UInputComponent;
 class USkeletalMeshComponent;
 class UCameraComponent;
@@ -31,6 +32,9 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components", meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FirstPersonCameraComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components", meta = (AllowPrivateAccess = "true"))
+	UPlayerInteractionComponent* PlayerInteractionComponent;
 
 protected:
 

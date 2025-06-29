@@ -1,5 +1,3 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
-
 using UnrealBuildTool;
 
 public class TheLongNight_Unreal : ModuleRules
@@ -18,19 +16,19 @@ public class TheLongNight_Unreal : ModuleRules
 			"StateTreeModule",
 			"GameplayStateTreeModule",
 			"UMG",
-			"Slate",
-			"SlateCore"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[] { });
 
 		PublicIncludePaths.AddRange(new string[] {
 			"TheLongNight_Unreal",
-			"TheLongNight_Unreal/Variant_Shooter/AI"
+			"TheLongNight_Unreal/Variant_Shooter/AI",
+			"TheLongNight_Unreal/Systems/",
+			"TheLongNight_Unreal/Systems/Pickup",
 		});
 
 		// Uncomment if you are using Slate UI
-		// PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });
+		PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });
 
 		// Uncomment if you are using online features
 		// PrivateDependencyModuleNames.Add("OnlineSubsystem");

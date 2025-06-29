@@ -30,17 +30,17 @@ void UPauseMenuWidget::ResumeGame()
 
 void UPauseMenuWidget::SaveGame()
 {
-	UE_LOG(LogTemp, Log, TEXT("Save Game Clicked"));
+	//UE_LOG(LogTemp, Log, TEXT("Save Game Clicked"));
 }
 
 void UPauseMenuWidget::LoadGame()
 {
-	UE_LOG(LogTemp, Log, TEXT("Load Game Clicked"));
+	//UE_LOG(LogTemp, Log, TEXT("Load Game Clicked"));
 }
 
 void UPauseMenuWidget::Options()
 {
-	UE_LOG(LogTemp, Log, TEXT("Options Clicked"));
+	//UE_LOG(LogTemp, Log, TEXT("Options Clicked"));
 }
 
 void UPauseMenuWidget::HandleExit()
