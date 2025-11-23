@@ -27,15 +27,17 @@ APlayerController* UPauseSubsystem::GetFirstPlayerController() const
 void UPauseSubsystem::TogglePause()
 {
     UWorld* World = GetWorld();
-    if (!World)
-        return;
+    if (!World) {
+	    return;
+    }
 
     bool isPaused = !World->IsPaused();
     UGameplayStatics::SetGamePaused(World, isPaused);
 
     APlayerController* PlayerController = GetFirstPlayerController();
-    if (!PlayerController)
-        return;
+    if (!PlayerController) {
+	    return;
+    }
 
     if (isPaused)
     {

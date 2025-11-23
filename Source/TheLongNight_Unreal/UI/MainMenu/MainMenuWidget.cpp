@@ -7,17 +7,21 @@ void UMainMenuWidget::NativeOnInitialized()
 {
 	Super::NativeOnInitialized();
 
-	if (NewButton)
+	if (NewButton) {
 		NewButton->OnClicked.AddDynamic(this, &UMainMenuWidget::NewGame);
+	}
 
-	if (LoadButton)
+	if (LoadButton) {
 		LoadButton->OnClicked.AddDynamic(this, &UMainMenuWidget::LoadGame);
+	}
 
-	if (OptionsButton)
+	if (OptionsButton) {
 		OptionsButton->OnClicked.AddDynamic(this, &UMainMenuWidget::Options);
+	}
 
-	if (ExitButton)
+	if (ExitButton) {
 		ExitButton->OnClicked.AddDynamic(this, &UMainMenuWidget::Exit);
+	}
 }
 
 void UMainMenuWidget::NewGame()

@@ -26,8 +26,9 @@ void UPlayerInteractionComponent::TickComponent(float DeltaTime, ELevelTick Tick
 void UPlayerInteractionComponent::HandleHover()
 {
 	APlayerController* PlayerController = Cast<APlayerController>(GetOwner()->GetInstigatorController());
-	if (!PlayerController)
+	if (!PlayerController) {
 		return;
+	}
 
 	FVector StartPosition;
 	FRotator StartRotation;
@@ -43,13 +44,15 @@ void UPlayerInteractionComponent::HandleHover()
 
 	if (HitItem != CurrentItem)
 	{
-		if (CurrentItem)
+		if (CurrentItem) {
 			OnHoverExit.Broadcast(CurrentItem);
-		
+		}
+
 		CurrentItem = HitItem;
 		
-		if (CurrentItem)
+		if (CurrentItem) {
 			OnHoverEnter.Broadcast(CurrentItem);
+		}
 	}
 
 	//DrawDebugLine(GetWorld(), StartPosition, EndPosition, FColor::Red, false, -1, 0, 1.f);

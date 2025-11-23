@@ -3,14 +3,16 @@
 
 bool UPickableItemManager::GetItemDataByRowName(FName RowName, FPickableItemRow& OutRow) const
 {
-	if (!ItemTable)
+	if (!ItemTable) {
 		return false;
-	
+	}
+
 	static const FString Context = TEXT("GetPickableItemData");
 	const FPickableItemRow* Row = ItemTable->FindRow<FPickableItemRow>(RowName, Context);
-	if (!Row)
+	if (!Row) {
 		return false;
-	
+	}
+
 	OutRow = *Row;
 	return true;
 }

@@ -7,20 +7,25 @@ void UPauseMenuWidget::NativeOnInitialized()
 {
 	Super::NativeOnInitialized();
 
-	if (ResumeButton)
+	if (ResumeButton) {
 		ResumeButton->OnClicked.AddDynamic(this, &UPauseMenuWidget::ResumeGame);
+	}
 
-	if (SaveButton)
+	if (SaveButton) {
 		SaveButton->OnClicked.AddDynamic(this, &UPauseMenuWidget::SaveGame);
+	}
 
-	if (LoadButton)
+	if (LoadButton) {
 		LoadButton->OnClicked.AddDynamic(this, &UPauseMenuWidget::LoadGame);
+	}
 
-	if (OptionsButton)
+	if (OptionsButton) {
 		OptionsButton->OnClicked.AddDynamic(this, &UPauseMenuWidget::Options);
+	}
 
-	if (ExitButton)
+	if (ExitButton) {
 		ExitButton->OnClicked.AddDynamic(this, &UPauseMenuWidget::HandleExit);
+	}
 }
 
 void UPauseMenuWidget::ResumeGame()
