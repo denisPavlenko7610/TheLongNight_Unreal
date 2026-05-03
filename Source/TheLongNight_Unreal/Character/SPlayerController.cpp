@@ -1,7 +1,7 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 
-#include "SurvivePlayerController.h"
+#include "SPlayerController.h"
 
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
@@ -10,12 +10,12 @@
 #include "TheLongNight_UnrealCameraManager.h"
 #include "Systems/Pause/PauseSubsystem.h"
 
-ASurvivePlayerController::ASurvivePlayerController(): PauseAction(nullptr)
+ASPlayerController::ASPlayerController(): PauseAction(nullptr)
 {
 	PlayerCameraManagerClass = ATheLongNight_UnrealCameraManager::StaticClass();
 }
 
-void ASurvivePlayerController::SetupInputComponent()
+void ASPlayerController::SetupInputComponent()
 {
 	Super::SetupInputComponent();
 
@@ -37,13 +37,13 @@ void ASurvivePlayerController::SetupInputComponent()
 			if (PauseAction)
 			{
 				EnhancedInputComponent->BindAction(PauseAction, ETriggerEvent::Started, this,
-				                                   &ASurvivePlayerController::OnPausePressed);
+				                                   &ASPlayerController::OnPausePressed);
 			}
 		}
 	}
 }
 
-void ASurvivePlayerController::OnPausePressed()
+void ASPlayerController::OnPausePressed()
 {
 	if (UGameInstance* GameInstance = GetGameInstance())
 	{

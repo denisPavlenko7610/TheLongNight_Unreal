@@ -4,18 +4,18 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
-#include "SurvivePlayerController.generated.h"
+#include "SPlayerController.generated.h"
 
 class UInputAction;
 class UInputMappingContext;
 
 UCLASS(abstract)
-class THELONGNIGHT_UNREAL_API ASurvivePlayerController : public APlayerController
+class THELONGNIGHT_UNREAL_API ASPlayerController : public APlayerController
 {
 	GENERATED_BODY()
 	
 public:
-	ASurvivePlayerController();
+	ASPlayerController();
 
 	UPROPERTY(EditAnywhere, Category="Input")
 	UInputAction* PauseAction;

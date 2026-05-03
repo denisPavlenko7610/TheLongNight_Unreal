@@ -26,7 +26,7 @@ void UMainMenuWidget::NativeOnInitialized()
 
 void UMainMenuWidget::NewGame()
 {
-	UGameplayStatics::OpenLevel(this, "Game");
+	UGameplayStatics::OpenLevel(this, "L_OpenWorld");
 	RemoveFromParent();
 }
 

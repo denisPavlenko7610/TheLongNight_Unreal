@@ -1,6 +1,6 @@
 ﻿#include "PauseSubsystem.h"
 
-#include "Core/SurviveGameInstance.h"
+#include "Core/SGameInstance.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/PlayerController.h"
 #include "UI/PauseMenu/PauseMenuWidget.h"
@@ -8,7 +8,7 @@
 void UPauseSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
     Super::Initialize(Collection);
-    if (USurviveGameInstance* GameInstance = Cast<USurviveGameInstance>(GetGameInstance()))
+    if (USGameInstance* GameInstance = Cast<USGameInstance>(GetGameInstance()))
     {
         PauseMenuClass = GameInstance->PauseMenuClass;
     }
