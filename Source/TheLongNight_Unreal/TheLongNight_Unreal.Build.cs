@@ -25,9 +25,8 @@ public class TheLongNight_Unreal : ModuleRules
 		PublicIncludePaths.AddRange(
 		[
 			"TheLongNight_Unreal",
-			"TheLongNight_Unreal/Variant_Shooter/AI",
 			"TheLongNight_Unreal/Systems/",
-			"TheLongNight_Unreal/Systems/Pickup"
+			"TheLongNight_Unreal/Systems/PickUp"
 		]
 		);
 
