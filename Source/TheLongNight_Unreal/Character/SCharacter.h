@@ -4,6 +4,7 @@
 #include "GameFramework/Character.h"
 #include "SCharacter.generated.h"
 
+class USInventoryComponent;
 class USItemData;
 class UCameraComponent;
 
@@ -26,7 +27,9 @@ public:
 	void TryInteract();
 	bool GetFocusedInteractionText(FText& OutInteractionText) const;
 
-	bool AddItemToInventory(USItemData* ItemData);
+	bool AddItemToInventory(USItemData* ItemData, int32 Quantity = 1);
+
+	USInventoryComponent* GetInventoryComponent() const;
 
 private:
 	bool FindInteractionHit(FHitResult& OutHitResult) const;
@@ -50,6 +53,6 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "Survival|Interaction")
 	TEnumAsByte<ECollisionChannel> InteractionTraceChannel = ECC_Visibility;
 
-	UPROPERTY()
-	TArray<TObjectPtr<USItemData>> InventoryItems;
+	UPROPERTY(VisibleAnywhere, Category = "Survival|Inventory")
+	TObjectPtr<USInventoryComponent> InventoryComponent;
 };

@@ -4,6 +4,7 @@
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Interaction/SInteractable.h"
+#include "Inventory/SInventoryComponent.h"
 #include "Items/SItemData.h"
 
 ASCharacter::ASCharacter()
@@ -27,6 +28,8 @@ ASCharacter::ASCharacter()
     Movement->bUseControllerDesiredRotation = false;
     Movement->JumpZVelocity = 0.0f;
     Movement->AirControl = 0.0f;
+
+    InventoryComponent = CreateDefaultSubobject<USInventoryComponent>(TEXT("InventoryComponent"));
 }
 
 void ASCharacter::BeginPlay()
@@ -173,23 +176,18 @@ bool ASCharacter::GetFocusedInteractionText(FText& OutInteractionText) const {
     return true;
 }
 
-bool ASCharacter::AddItemToInventory(USItemData* ItemData)
+bool ASCharacter::AddItemToInventory(USItemData* ItemData, int32 Quantity)
 {
-    if (!IsValid(ItemData))
+    if (!IsValid(InventoryComponent))
     {
-        UE_LOG(LogTemp, Warning, TEXT("AddItemToInventory failed: ItemData is invalid."));
+        UE_LOG(LogTemp, Warning, TEXT("AddItemToInventory failed: InventoryComponent is invalid."));
         return false;
     }
 
-    InventoryItems.Add(ItemData);
+    return InventoryComponent->AddItem(ItemData, Quantity);
+}
 
-    UE_LOG(
-        LogTemp,
-        Log,
-        TEXT("Added item to inventory: %s. Inventory count: %d"),
-        *ItemData->GetDisplayName().ToString(),
-        InventoryItems.Num()
-    );
-
-    return true;
+USInventoryComponent* ASCharacter::GetInventoryComponent() const
+{
+    return InventoryComponent;
 }

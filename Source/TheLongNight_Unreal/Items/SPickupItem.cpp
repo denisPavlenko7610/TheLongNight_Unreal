@@ -30,7 +30,7 @@ void ASPickupItem::Interact(AActor* Interactor)
 		return;
 	}
 
-	const bool bAdded = Character->AddItemToInventory(ItemData);
+	const bool bAdded = Character->AddItemToInventory(ItemData, 1);
 	if (!bAdded)
 	{
 		return;
