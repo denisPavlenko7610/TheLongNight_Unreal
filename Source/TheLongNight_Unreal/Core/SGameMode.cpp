@@ -1,25 +1,23 @@
 ﻿#include "Core/SGameMode.h"
 #include "Core/ASGameState.h"
+#include "Core/SPlayerController.h"
 
-ASGameMode::ASGameMode()
-{
+ASGameMode::ASGameMode() {
 	GameStateClass = ASGameState::StaticClass();
+	PlayerControllerClass = ASPlayerController::StaticClass();
 }
 
-void ASGameMode::BeginPlay()
-{
+void ASGameMode::BeginPlay() {
 	Super::BeginPlay();
 
 	StartWorld();
 }
 
-void ASGameMode::StartWorld()
-{
+void ASGameMode::StartWorld() {
 	SetupNewWorld();
 
 	ASGameState* SGameState = GetGameState<ASGameState>();
-	if (!IsValid(SGameState))
-	{
+	if (!IsValid(SGameState)) {
 		UE_LOG(LogTemp, Error, TEXT("StartWorld failed: ASGameState is invalid."));
 		return;
 	}
@@ -29,11 +27,9 @@ void ASGameMode::StartWorld()
 	UE_LOG(LogTemp, Log, TEXT("World started."));
 }
 
-void ASGameMode::RequestGameOver()
-{
+void ASGameMode::RequestGameOver() {
 	ASGameState* SGameState = GetGameState<ASGameState>();
-	if (!IsValid(SGameState))
-	{
+	if (!IsValid(SGameState)) {
 		UE_LOG(LogTemp, Error, TEXT("RequestGameOver failed: ASGameState is invalid."));
 		return;
 	}
@@ -43,11 +39,9 @@ void ASGameMode::RequestGameOver()
 	UE_LOG(LogTemp, Warning, TEXT("Game Over."));
 }
 
-void ASGameMode::SetupNewWorld()
-{
+void ASGameMode::SetupNewWorld() {
 	ASGameState* SGameState = GetGameState<ASGameState>();
-	if (!IsValid(SGameState))
-	{
+	if (!IsValid(SGameState)) {
 		UE_LOG(LogTemp, Error, TEXT("SetupNewWorld failed: ASGameState is invalid."));
 		return;
 	}
