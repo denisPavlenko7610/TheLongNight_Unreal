@@ -4,6 +4,7 @@
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Interaction/SInteractable.h"
+#include "Items/SItemData.h"
 
 ASCharacter::ASCharacter()
 {
@@ -149,7 +150,7 @@ bool ASCharacter::FindInteractionHit(FHitResult& OutHitResult) const
     );
 }
 
-bool ASCharacter::GetFocusedIntractionText(FText& OutInteractionText) const {
+bool ASCharacter::GetFocusedInteractionText(FText& OutInteractionText) const {
     FHitResult HitResult;
     if (!FindInteractionHit(HitResult))
     {
@@ -169,5 +170,26 @@ bool ASCharacter::GetFocusedIntractionText(FText& OutInteractionText) const {
     }
 
     OutInteractionText = Interactable->GetInteractionText();
+    return true;
+}
+
+bool ASCharacter::AddItemToInventory(USItemData* ItemData)
+{
+    if (!IsValid(ItemData))
+    {
+        UE_LOG(LogTemp, Warning, TEXT("AddItemToInventory failed: ItemData is invalid."));
+        return false;
+    }
+
+    InventoryItems.Add(ItemData);
+
+    UE_LOG(
+        LogTemp,
+        Log,
+        TEXT("Added item to inventory: %s. Inventory count: %d"),
+        *ItemData->GetDisplayName().ToString(),
+        InventoryItems.Num()
+    );
+
     return true;
 }
