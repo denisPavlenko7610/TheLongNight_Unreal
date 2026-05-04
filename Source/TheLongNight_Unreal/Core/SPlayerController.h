@@ -4,6 +4,7 @@
 #include "GameFramework/PlayerController.h"
 #include "SPlayerController.generated.h"
 
+class USInteractionPromptWidget;
 class UInputAction;
 class UInputMappingContext;
 struct FInputActionValue;
@@ -16,6 +17,8 @@ class THELONGNIGHT_UNREAL_API ASPlayerController : public APlayerController
 public:
 	ASPlayerController();
 
+	void UpdateInteractionPrompt();
+
 	virtual void BeginPlay() override;
 	virtual void SetupInputComponent() override;
 
@@ -26,6 +29,8 @@ private:
 	void StartSprint();
 	void StopSprint();
 	void TogglePause();
+
+	void CreateInteractionPromptWidget();
 
 private:
 	UPROPERTY(EditDefaultsOnly, Category = "Survival|Input")
@@ -48,4 +53,15 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Survival|Input")
 	int32 GameplayMappingPriority = 0;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Survival|UI")
+	TSubclassOf<USInteractionPromptWidget> InteractionPromptWidgetClass;
+
+	UPROPERTY()
+	TObjectPtr<USInteractionPromptWidget> InteractionPromptWidget;
+
+	FTimerHandle InteractionPromptTimerHandle;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Survival|UI")
+	float InteractionPromptUpdateInterval = 0.1f;
 };

@@ -23,6 +23,7 @@ public:
 	void StopSprint();
 
 	void TryInteract();
+	bool GetFocusedInteractionText(FText& OutInteractionText) const;
 
 private:
 	bool FindInteractionHit(FHitResult& OutHitResult) const;

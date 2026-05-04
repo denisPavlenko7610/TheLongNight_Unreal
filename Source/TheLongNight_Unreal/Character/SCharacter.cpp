@@ -148,3 +148,26 @@ bool ASCharacter::FindInteractionHit(FHitResult& OutHitResult) const
         QueryParams
     );
 }
+
+bool ASCharacter::GetFocusedIntractionText(FText& OutInteractionText) const {
+    FHitResult HitResult;
+    if (!FindInteractionHit(HitResult))
+    {
+        return false;
+    }
+
+    AActor* HitActor = HitResult.GetActor();
+    if (!IsValid(HitActor))
+    {
+        return false;
+    }
+
+    ISInteractable* Interactable = Cast<ISInteractable>(HitActor);
+    if (!Interactable)
+    {
+        return false;
+    }
+
+    OutInteractionText = Interactable->GetInteractionText();
+    return true;
+}

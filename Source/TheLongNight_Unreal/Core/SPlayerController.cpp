@@ -5,11 +5,44 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputAction.h"
 #include "InputMappingContext.h"
+#include "Blueprint/UserWidget.h"
 #include "Kismet/GameplayStatics.h"
+#include "UI/SInteractionPromptWidget.h"
 
 ASPlayerController::ASPlayerController()
 {
     bShowMouseCursor = false;
+}
+
+void ASPlayerController::UpdateInteractionPrompt()
+{
+    if (!IsValid(InteractionPromptWidget))
+    {
+        return;
+    }
+
+    ASCharacter* ControlledCharacter = Cast<ASCharacter>(GetPawn());
+    if (!IsValid(ControlledCharacter))
+    {
+        InteractionPromptWidget->HidePrompt();
+        return;
+    }
+
+    FText InteractionText;
+    const bool bHasInteractionText = ControlledCharacter->GetFocusedInteractionText(InteractionText);
+
+    if (!bHasInteractionText)
+    {
+        InteractionPromptWidget->HidePrompt();
+        return;
+    }
+
+    const FText FinalPromptText = FText::Format(
+        FText::FromString(TEXT("[E] {0}")),
+        InteractionText
+    );
+
+    InteractionPromptWidget->ShowPrompt(FinalPromptText);
 }
 
 void ASPlayerController::BeginPlay()
@@ -47,6 +80,16 @@ void ASPlayerController::BeginPlay()
 
     SetInputMode(FInputModeGameOnly());
     bShowMouseCursor = false;
+
+    CreateInteractionPromptWidget();
+
+    GetWorldTimerManager().SetTimer(
+        InteractionPromptTimerHandle,
+        this,
+        &ASPlayerController::UpdateInteractionPrompt,
+        InteractionPromptUpdateInterval,
+        true
+    );
 
     UE_LOG(LogTemp, Log, TEXT("Gameplay input mapping context added."));
 }
@@ -166,6 +209,8 @@ void ASPlayerController::Interact()
     }
 
     ControlledCharacter->TryInteract();
+
+    UpdateInteractionPrompt();
 }
 
 void ASPlayerController::StartSprint()
@@ -215,4 +260,27 @@ void ASPlayerController::TogglePause()
 
         UE_LOG(LogTemp, Log, TEXT("Game paused."));
     }
+}
+
+void ASPlayerController::CreateInteractionPromptWidget()
+{
+    if (!IsValid(InteractionPromptWidgetClass))
+    {
+        UE_LOG(LogTemp, Warning, TEXT("InteractionPromptWidgetClass is not assigned."));
+        return;
+    }
+
+    InteractionPromptWidget = CreateWidget<USInteractionPromptWidget>(
+        this,
+        InteractionPromptWidgetClass
+    );
+
+    if (!IsValid(InteractionPromptWidget))
+    {
+        UE_LOG(LogTemp, Error, TEXT("Failed to create InteractionPromptWidget."));
+        return;
+    }
+
+    InteractionPromptWidget->AddToViewport();
+    InteractionPromptWidget->HidePrompt();
 }
