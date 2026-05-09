@@ -149,6 +149,10 @@ int32 USInventoryComponent::GetTotalItemCount() const
     return TotalCount;
 }
 
+const TArray<FSInventoryEntry>& USInventoryComponent::GetItems() const {
+    return Items;
+}
+
 FSInventoryEntry* USInventoryComponent::FindEntryMutable(USItemData* ItemData)
 {
     if (!IsValid(ItemData))

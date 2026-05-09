@@ -34,6 +34,7 @@ public:
 	float GetCurrentWeightKg() const;
 	float GetMaxWeightKg() const;
 	int32 GetTotalItemCount() const;
+	const TArray<FSInventoryEntry>& GetItems() const;
 
 private:
 	FSInventoryEntry* FindEntryMutable(USItemData* ItemData);
