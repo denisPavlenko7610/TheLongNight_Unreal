@@ -42,6 +42,12 @@ Saved/
 *.xcodeproj/*
 *.xcconfig
 
+# ==========================================
+# Code Dump Script and Generated Outputs
+# ==========================================
+UnrealCodeDump.py
+SourceCodeDump_*.txt
+
 # Rider IDE
 .idea/
 *.sln.iml

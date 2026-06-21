@@ -144,13 +144,7 @@ bool ASCharacter::FindInteractionHit(FHitResult& OutHitResult) const
     FCollisionQueryParams QueryParams(SCENE_QUERY_STAT(SInteractionTrace), false);
     QueryParams.AddIgnoredActor(this);
 
-    return World->LineTraceSingleByChannel(
-        OutHitResult,
-        Start,
-        End,
-        InteractionTraceChannel,
-        QueryParams
-    );
+    return World->LineTraceSingleByChannel(OutHitResult, Start, End, InteractionTraceChannel, QueryParams);
 }
 
 bool ASCharacter::GetFocusedInteractionText(FText& OutInteractionText) const {
