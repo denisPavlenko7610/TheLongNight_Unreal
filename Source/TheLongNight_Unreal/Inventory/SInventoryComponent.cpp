@@ -1,5 +1,6 @@
 ﻿#include "Inventory/SInventoryComponent.h"
 
+#include "Core/SGameInstance.h"
 #include "Items/SItemData.h"
 
 USInventoryComponent::USInventoryComponent()
@@ -7,7 +8,7 @@ USInventoryComponent::USInventoryComponent()
     PrimaryComponentTick.bCanEverTick = false;
 }
 
-bool USInventoryComponent::AddItem(USItemData* ItemData, int32 Quantity)
+bool USInventoryComponent::AddItem(USItemData* ItemData, int32 Quantity, bool bIgnoreWeightLimit)
 {
     if (!IsValid(ItemData))
     {
@@ -24,7 +25,7 @@ bool USInventoryComponent::AddItem(USItemData* ItemData, int32 Quantity)
     const float AddedWeight = ItemData->GetWeightKg() * static_cast<float>(Quantity);
     const float NewWeight = GetCurrentWeightKg() + AddedWeight;
 
-    if (NewWeight > MaxWeightKg)
+    if (!bIgnoreWeightLimit && NewWeight > MaxWeightKg)
     {
         UE_LOG(
             LogTemp,
@@ -198,4 +199,77 @@ const FSInventoryEntry* USInventoryComponent::FindEntry(USItemData* ItemData) co
     }
 
     return nullptr;
+}
+
+FSInventorySaveData USInventoryComponent::BuildSaveData() const
+{
+    FSInventorySaveData SaveData;
+
+    for (const FSInventoryEntry& Entry : Items)
+    {
+        if (!IsValid(Entry.ItemData))
+        {
+            continue;
+        }
+
+        if (Entry.Quantity <= 0)
+        {
+            continue;
+        }
+
+        FSInventorySaveEntry SaveEntry;
+        SaveEntry.ItemId = Entry.ItemData->GetItemId();
+        SaveEntry.Quantity = Entry.Quantity;
+
+        SaveData.Items.Add(SaveEntry);
+    }
+
+    return SaveData;
+}
+
+void USInventoryComponent::RestoreFromSaveData(
+    const FSInventorySaveData& SaveData,
+    const USGameInstance* GameInstance
+)
+{
+    Clear();
+
+    if (!IsValid(GameInstance))
+    {
+        UE_LOG(LogTemp, Error, TEXT("RestoreFromSaveData failed: GameInstance is invalid."));
+        return;
+    }
+
+    for (const FSInventorySaveEntry& SaveEntry : SaveData.Items)
+    {
+        if (SaveEntry.ItemId.IsNone())
+        {
+            continue;
+        }
+
+        if (SaveEntry.Quantity <= 0)
+        {
+            continue;
+        }
+
+        USItemData* ItemData = GameInstance->FindItemById(SaveEntry.ItemId);
+        if (!IsValid(ItemData))
+        {
+            UE_LOG(
+                LogTemp,
+                Warning,
+                TEXT("RestoreFromSaveData skipped missing item: %s"),
+                *SaveEntry.ItemId.ToString()
+            );
+
+            continue;
+        }
+
+        AddItem(ItemData, SaveEntry.Quantity, true);
+    }
+}
+
+void USInventoryComponent::Clear()
+{
+    Items.Reset();
 }

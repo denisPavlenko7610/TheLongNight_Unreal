@@ -2,7 +2,10 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Save/SSaveTypes.h"
 #include "SInventoryComponent.generated.h"
+
+class USGameInstance;
 
 class USItemData;
 
@@ -26,7 +29,7 @@ class THELONGNIGHT_UNREAL_API USInventoryComponent : public UActorComponent
 public:
 	USInventoryComponent();
 
-	bool AddItem(USItemData* ItemData, int32 Quantity = 1);
+	bool AddItem(USItemData* ItemData, int32 Quantity = 1, bool bIgnoreWeightLimit = false);
 	bool RemoveItem(USItemData* ItemData, int32 Quantity = 1);
 
 	bool HasItem(USItemData* ItemData, int32 Quantity = 1) const;
@@ -34,6 +37,11 @@ public:
 	float GetCurrentWeightKg() const;
 	float GetMaxWeightKg() const;
 	int32 GetTotalItemCount() const;
+
+	FSInventorySaveData BuildSaveData() const;
+	void RestoreFromSaveData(const FSInventorySaveData& SaveData, const USGameInstance* GameInstance);
+	void Clear();
+
 	const TArray<FSInventoryEntry>& GetItems() const;
 
 private:

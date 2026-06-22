@@ -6,6 +6,21 @@
 #include "SSaveTypes.generated.h"
 
 USTRUCT()
+struct THELONGNIGHT_UNREAL_API FSPlayerSaveData
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	FVector Location = FVector::ZeroVector;
+
+	UPROPERTY()
+	FRotator ActorRotation = FRotator::ZeroRotator;
+
+	UPROPERTY()
+	FRotator ControlRotation = FRotator::ZeroRotator;
+};
+
+USTRUCT()
 struct THELONGNIGHT_UNREAL_API FSInventorySaveEntry
 {
 	GENERATED_BODY()
@@ -63,4 +78,7 @@ struct THELONGNIGHT_UNREAL_API FSGameSaveData
 
 	UPROPERTY()
 	FSCharacterSurvivalSaveData CharacterSurvival;
+
+	UPROPERTY()
+	FSPlayerSaveData Player;
 };

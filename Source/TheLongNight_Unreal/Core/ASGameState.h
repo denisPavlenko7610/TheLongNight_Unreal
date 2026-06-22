@@ -8,6 +8,7 @@
 DECLARE_MULTICAST_DELEGATE_OneParam(FSOnGameMinutePassed, float);
 DECLARE_MULTICAST_DELEGATE(FSOnGameHourPassed);
 DECLARE_MULTICAST_DELEGATE(FSOnGameDayPassed);
+DECLARE_MULTICAST_DELEGATE_OneParam(FSOnWorldTimeOfDayChanged, ESWorldTimeOfDay);
 
 UCLASS()
 class THELONGNIGHT_UNREAL_API ASGameState : public AGameStateBase
@@ -19,6 +20,17 @@ public:
 
 	virtual void Tick(float DeltaSeconds) override;
 
+	ESWorldTimeOfDay GetWorldTimeOfDay() const;
+
+	void InitializeWorldState(
+		const FSWorldTime& NewWorldTime,
+		float NewWorldTemperature,
+		float NewGameMinutesPerRealSecond,
+		const FSDayNightSettings& NewDayNightSettings
+	);
+
+	void SetDayNightSettings(const FSDayNightSettings& NewDayNightSettings);
+
 	ESGamePhase GetGamePhase() const;
 	const FSWorldTime& GetWorldTime() const;
 	float GetWorldTemperature() const;
@@ -26,20 +38,17 @@ public:
 	void SetGamePhase(ESGamePhase NewGamePhase);
 	void SetWorldTemperature(float NewWorldTemperature);
 
-	void InitializeWorldState(const FSWorldTime& NewWorldTime, float NewWorldTemperature, float NewGameMinutesPerRealSecond);
-
 	void SetWorldTime(const FSWorldTime& NewWorldTime);
 	void SetGameMinutesPerRealSecond(float NewGameMinutesPerRealSecond);
 
 	FSOnGameMinutePassed OnGameMinutePassed;
 	FSOnGameHourPassed OnGameHourPassed;
 	FSOnGameDayPassed OnGameDayPassed;
+	FSOnWorldTimeOfDayChanged OnWorldTimeOfDayChanged;
 
 	void AdvanceWorldTime(float RealDeltaSeconds);
 
 private:
-	void BroadcastTimeEvents(int32 PreviousTotalMinutes, int32 NewTotalMinutes);
-
 	UPROPERTY()
 	ESGamePhase GamePhase = ESGamePhase::None;
 
@@ -53,4 +62,14 @@ private:
 	float GameMinutesPerRealSecond = 4.0f;
 
 	float TimeAccumulator = 0.0f;
+
+	UPROPERTY()
+	ESWorldTimeOfDay WorldTimeOfDay = ESWorldTimeOfDay::Day;
+
+	UPROPERTY()
+	FSDayNightSettings DayNightSettings;
+
+	void BroadcastTimeEvents(int32 PreviousTotalMinutes, int32 NewTotalMinutes);
+	void RefreshWorldTimeOfDay();
+	ESWorldTimeOfDay DetermineWorldTimeOfDay(const FSWorldTime& Time) const;
 };

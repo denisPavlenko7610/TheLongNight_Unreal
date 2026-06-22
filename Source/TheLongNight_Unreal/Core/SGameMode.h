@@ -5,6 +5,8 @@
 #include "SGameMode.generated.h"
 
 class USWorldDefinitionData;
+class USGameSaveSubsystem;
+class USGameInstance;
 
 UCLASS()
 class THELONGNIGHT_UNREAL_API ASGameMode : public AGameModeBase
@@ -22,7 +24,9 @@ protected:
 
 private:
 	void SetupNewWorld();
-
+	void ApplyPendingLoadIfNeeded();
+	bool ShouldLoadGame() const;
+	
 	UPROPERTY(EditDefaultsOnly, Category = "Survival|World")
 	TObjectPtr<USWorldDefinitionData> WorldDefinitionData;
 };

@@ -41,13 +41,7 @@ void ASGameState::AdvanceWorldTime(float RealDeltaSeconds)
 	const int32 NewTotalMinutes = WorldTime.GetTotalMinutes();
 
 	BroadcastTimeEvents(PreviousTotalMinutes, NewTotalMinutes);
-}
-
-void ASGameState::InitializeWorldState(const FSWorldTime& NewWorldTime,	float NewWorldTemperature, float NewGameMinutesPerRealSecond)
-{
-	SetWorldTime(NewWorldTime);
-	SetWorldTemperature(NewWorldTemperature);
-	SetGameMinutesPerRealSecond(NewGameMinutesPerRealSecond);
+	RefreshWorldTimeOfDay();
 }
 
 void ASGameState::SetWorldTime(const FSWorldTime& NewWorldTime)
@@ -56,6 +50,20 @@ void ASGameState::SetWorldTime(const FSWorldTime& NewWorldTime)
 	TimeAccumulator = 0.0f;
 
 	UE_LOG(LogTemp,	Log, TEXT("World time set: Day %d, %02d:%02d."), WorldTime.Day,	WorldTime.Hour,	WorldTime.Minute);
+	RefreshWorldTimeOfDay();
+}
+
+void ASGameState::InitializeWorldState(
+	const FSWorldTime& NewWorldTime,
+	float NewWorldTemperature,
+	float NewGameMinutesPerRealSecond,
+	const FSDayNightSettings& NewDayNightSettings
+)
+{
+	SetDayNightSettings(NewDayNightSettings);
+	SetWorldTime(NewWorldTime);
+	SetWorldTemperature(NewWorldTemperature);
+	SetGameMinutesPerRealSecond(NewGameMinutesPerRealSecond);
 }
 
 void ASGameState::SetGameMinutesPerRealSecond(float NewGameMinutesPerRealSecond)
@@ -126,4 +134,62 @@ void ASGameState::SetWorldTemperature(float NewWorldTemperature)
 	WorldTemperature = NewWorldTemperature;
 
 	UE_LOG(LogTemp, Log, TEXT("World temperature changed to %.2f."), WorldTemperature);
+}
+
+ESWorldTimeOfDay ASGameState::GetWorldTimeOfDay() const
+{
+	return WorldTimeOfDay;
+}
+
+void ASGameState::SetDayNightSettings(const FSDayNightSettings& NewDayNightSettings)
+{
+	DayNightSettings = NewDayNightSettings;
+	RefreshWorldTimeOfDay();
+}
+
+ESWorldTimeOfDay ASGameState::DetermineWorldTimeOfDay(const FSWorldTime& Time) const
+{
+	const int32 CurrentMinutes = Time.GetMinutesSinceMidnight();
+
+	const int32 DawnStart = DayNightSettings.GetDawnStartMinutes();
+	const int32 DayStart = DayNightSettings.GetDayStartMinutes();
+	const int32 DuskStart = DayNightSettings.GetDuskStartMinutes();
+	const int32 NightStart = DayNightSettings.GetNightStartMinutes();
+
+	if (CurrentMinutes >= NightStart || CurrentMinutes < DawnStart)
+	{
+		return ESWorldTimeOfDay::Night;
+	}
+
+	if (CurrentMinutes >= DawnStart && CurrentMinutes < DayStart)
+	{
+		return ESWorldTimeOfDay::Dawn;
+	}
+
+	if (CurrentMinutes >= DayStart && CurrentMinutes < DuskStart)
+	{
+		return ESWorldTimeOfDay::Day;
+	}
+
+	return ESWorldTimeOfDay::Dusk;
+}
+
+void ASGameState::RefreshWorldTimeOfDay()
+{
+	const ESWorldTimeOfDay NewTimeOfDay = DetermineWorldTimeOfDay(WorldTime);
+	if (WorldTimeOfDay == NewTimeOfDay)
+	{
+		return;
+	}
+
+	WorldTimeOfDay = NewTimeOfDay;
+
+	OnWorldTimeOfDayChanged.Broadcast(WorldTimeOfDay);
+
+	UE_LOG(
+		LogTemp,
+		Log,
+		TEXT("World time of day changed to %d."),
+		static_cast<int32>(WorldTimeOfDay)
+	);
 }
