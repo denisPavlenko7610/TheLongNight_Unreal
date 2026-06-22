@@ -112,6 +112,16 @@ const FSWorldTime& ASGameState::GetWorldTime() const
 	return WorldTime;
 }
 
+float ASGameState::GetPreciseMinutesSinceMidnight() const
+{
+	constexpr float MinutesInDay = 24.0f * 60.0f;
+
+	return FMath::Fmod(
+		static_cast<float>(WorldTime.GetMinutesSinceMidnight()) + TimeAccumulator + MinutesInDay,
+		MinutesInDay
+	);
+}
+
 float ASGameState::GetWorldTemperature() const
 {
 	return WorldTemperature;

@@ -33,6 +33,7 @@ public:
 
 	ESGamePhase GetGamePhase() const;
 	const FSWorldTime& GetWorldTime() const;
+	float GetPreciseMinutesSinceMidnight() const;
 	float GetWorldTemperature() const;
 
 	void SetGamePhase(ESGamePhase NewGamePhase);
