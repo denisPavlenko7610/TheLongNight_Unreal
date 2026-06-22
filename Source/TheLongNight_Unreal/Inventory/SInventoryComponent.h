@@ -37,10 +37,8 @@ public:
 	const TArray<FSInventoryEntry>& GetItems() const;
 
 private:
-	FSInventoryEntry* FindEntryMutable(USItemData* ItemData);
 	const FSInventoryEntry* FindEntry(USItemData* ItemData) const;
-
-private:
+	
 	UPROPERTY()
 	TArray<FSInventoryEntry> Items;
 

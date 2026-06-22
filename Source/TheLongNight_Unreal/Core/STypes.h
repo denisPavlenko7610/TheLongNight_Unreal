@@ -25,13 +25,13 @@ struct THELONGNIGHT_UNREAL_API FSWorldTime
 {
 	GENERATED_BODY()
 
-	UPROPERTY()
+	UPROPERTY(EditAnywhere, Category = "Survival|Time", meta = (ClampMin = "1"))
 	int32 Day = 1;
 
-	UPROPERTY()
+	UPROPERTY(EditAnywhere, Category = "Survival|Time", meta = (ClampMin = "0", ClampMax = "23"))
 	int32 Hour = 8;
 
-	UPROPERTY()
+	UPROPERTY(EditAnywhere, Category = "Survival|Time", meta = (ClampMin = "0", ClampMax = "59"))
 	int32 Minute = 0;
 
 	void AddMinutes(int32 MinutesToAdd)
@@ -54,5 +54,10 @@ struct THELONGNIGHT_UNREAL_API FSWorldTime
 			Hour -= 24;
 			Day++;
 		}
+	}
+
+	int32 GetTotalMinutes() const
+	{
+		return (Day - 1) * 24 * 60 + Hour * 60 + Minute;
 	}
 };

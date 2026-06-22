@@ -27,7 +27,20 @@ public:
 	ESItemType GetItemType() const;
 	float GetWeightKg() const;
 
+	FName GetItemId() const;
+	bool CanStack() const;
+	int32 GetMaxStackSize() const;
+
 private:
+	UPROPERTY(EditDefaultsOnly, Category = "Survival|Item")
+	FName ItemId;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Survival|Item")
+	bool bCanStack = true;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Survival|Item", meta = (ClampMin = "1"))
+	int32 MaxStackSize = 10;
+
 	UPROPERTY(EditDefaultsOnly, Category = "Survival|Item")
 	FText DisplayName;
 

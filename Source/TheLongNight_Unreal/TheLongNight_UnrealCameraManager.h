@@ -11,7 +11,7 @@
  *  Limits min/max look pitch.
  */
 UCLASS()
-class ATheLongNight_UnrealCameraManager : public APlayerCameraManager
+class THELONGNIGHT_UNREAL_API ATheLongNight_UnrealCameraManager : public APlayerCameraManager
 {
 	GENERATED_BODY()
 	

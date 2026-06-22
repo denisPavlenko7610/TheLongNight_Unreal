@@ -5,11 +5,10 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputAction.h"
 #include "InputMappingContext.h"
+#include "TimerManager.h"
 #include "Blueprint/UserWidget.h"
-#include "Inventory/SInventoryComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "UI/SInteractionPromptWidget.h"
-#include "UI/SInventoryDebugWidget.h"
 
 ASPlayerController::ASPlayerController() {
 	bShowMouseCursor = false;
@@ -71,7 +70,6 @@ void ASPlayerController::BeginPlay() {
 	bShowMouseCursor = false;
 
 	CreateInteractionPromptWidget();
-	CreateInventoryDebugWidget();
 
 	GetWorldTimerManager().SetTimer(InteractionPromptTimerHandle, this, &ASPlayerController::UpdateInteractionPrompt, InteractionPromptUpdateInterval, true);
 }
@@ -110,10 +108,6 @@ void ASPlayerController::SetupInputComponent() {
 
 	if (IsValid(PauseAction)) {
 		EnhancedInputComponent->BindAction(PauseAction, ETriggerEvent::Started, this, &ASPlayerController::TogglePause);
-	}
-
-	if (IsValid(ToggleInventoryAction)) {
-		EnhancedInputComponent->BindAction(ToggleInventoryAction, ETriggerEvent::Started, this, &ASPlayerController::ToggleInventory);
 	}
 }
 
@@ -213,65 +207,4 @@ void ASPlayerController::CreateInteractionPromptWidget() {
 
 	InteractionPromptWidget->AddToViewport();
 	InteractionPromptWidget->HidePrompt();
-}
-
-void ASPlayerController::CreateInventoryDebugWidget()
-{
-	if (!IsValid(InventoryDebugWidgetClass))
-	{
-		UE_LOG(LogTemp, Warning, TEXT("InventoryDebugWidgetClass is not assigned."));
-		return;
-	}
-
-	InventoryDebugWidget = CreateWidget<USInventoryDebugWidget>(this, InventoryDebugWidgetClass);
-
-	if (!IsValid(InventoryDebugWidget))
-	{
-		UE_LOG(LogTemp, Error, TEXT("Failed to create InventoryDebugWidget."));
-		return;
-	}
-
-	InventoryDebugWidget->AddToViewport();
-	InventoryDebugWidget->SetVisibility(ESlateVisibility::Hidden);
-}
-
-void ASPlayerController::ToggleInventory()
-{
-	if (!IsValid(InventoryDebugWidget))
-	{
-		return;
-	}
-
-	const bool bIsVisible = InventoryDebugWidget->GetVisibility() != ESlateVisibility::Hidden;
-
-	if (bIsVisible)
-	{
-		InventoryDebugWidget->SetVisibility(ESlateVisibility::Hidden);
-		return;
-	}
-
-	RefreshInventoryDebugWidget();
-	InventoryDebugWidget->SetVisibility(ESlateVisibility::HitTestInvisible);
-}
-
-void ASPlayerController::RefreshInventoryDebugWidget()
-{
-	if (!IsValid(InventoryDebugWidget))
-	{
-		return;
-	}
-
-	ASCharacter* ControlledCharacter = Cast<ASCharacter>(GetPawn());
-	if (!IsValid(ControlledCharacter))
-	{
-		return;
-	}
-
-	USInventoryComponent* InventoryComponent = ControlledCharacter->GetInventoryComponent();
-	if (!IsValid(InventoryComponent))
-	{
-		return;
-	}
-
-	InventoryDebugWidget->RefreshFromInventory(InventoryComponent);
 }

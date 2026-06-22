@@ -25,4 +25,7 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = "Survival|Item")
 	TObjectPtr<USItemData> ItemData;
+
+	UPROPERTY(EditAnywhere, Category = "Survival|Item", meta = (ClampMin = "1"))
+	int32 Quantity = 1;
 };

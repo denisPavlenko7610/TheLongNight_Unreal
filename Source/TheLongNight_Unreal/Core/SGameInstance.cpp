@@ -1,5 +1,7 @@
 ﻿#include "Core/SGameInstance.h"
 
+#include "Engine/World.h"
+#include "Items/SItemRegistryData.h"
 #include "Kismet/GameplayStatics.h"
 
 void USGameInstance::Init()
@@ -29,6 +31,17 @@ void USGameInstance::StartNewGame()
 	}
 
 	UGameplayStatics::OpenLevel(World, OpenWorldMapName);
+}
+
+USItemData* USGameInstance::FindItemById(FName ItemId) const
+{
+	if (!IsValid(ItemRegistryData))
+	{
+		UE_LOG(LogTemp, Error, TEXT("FindItemById failed: ItemRegistryData is not assigned."));
+		return nullptr;
+	}
+
+	return ItemRegistryData->FindItemById(ItemId);
 }
 
 void USGameInstance::LoadGame()

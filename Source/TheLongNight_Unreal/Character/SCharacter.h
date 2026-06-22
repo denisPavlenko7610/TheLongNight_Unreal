@@ -7,6 +7,7 @@
 class USInventoryComponent;
 class USItemData;
 class UCameraComponent;
+class USCharacterSurvivalComponent;
 
 UCLASS()
 class THELONGNIGHT_UNREAL_API ASCharacter : public ACharacter
@@ -29,12 +30,18 @@ public:
 
 	bool AddItemToInventory(USItemData* ItemData, int32 Quantity = 1);
 
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
+	USCharacterSurvivalComponent* GetSurvivalComponent() const;
 	USInventoryComponent* GetInventoryComponent() const;
 
 private:
 	bool FindInteractionHit(FHitResult& OutHitResult) const;
 
-private:
+	void BindToGameTime();
+	void UnbindFromGameTime();
+	void HandleGameMinutePassed(float GameMinutes);
+	
 	UPROPERTY(VisibleAnywhere, Category = "Survival|Camera")
 	TObjectPtr<UCameraComponent> FirstPersonCamera;
 
@@ -55,4 +62,7 @@ private:
 
 	UPROPERTY(VisibleAnywhere, Category = "Survival|Inventory")
 	TObjectPtr<USInventoryComponent> InventoryComponent;
+
+	UPROPERTY(VisibleAnywhere, Category = "Survival|Vitals")
+	TObjectPtr<USCharacterSurvivalComponent> SurvivalComponent;
 };

@@ -5,6 +5,9 @@
 #include "Core/STypes.h"
 #include "SGameInstance.generated.h"
 
+class USItemRegistryData;
+class USItemData;
+
 UCLASS()
 class THELONGNIGHT_UNREAL_API USGameInstance : public UGameInstance
 {
@@ -14,8 +17,7 @@ public:
 	virtual void Init() override;
 	virtual void Shutdown() override;
 
-	UPROPERTY(EditDefaultsOnly, Category="Pause")
-	TSubclassOf<UUserWidget> PauseMenuClass;
+	USItemData* FindItemById(FName ItemId) const;
 
 	UFUNCTION(BlueprintCallable, Category = "Survival|Flow")
 	void StartNewGame();
@@ -47,4 +49,7 @@ private:
 
 	UPROPERTY(VisibleInstanceOnly, Category = "Survival|Flow")
 	ESTypes StartGameMode = ESTypes::NewGame;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Survival|Items")
+	TObjectPtr<USItemRegistryData> ItemRegistryData;
 };

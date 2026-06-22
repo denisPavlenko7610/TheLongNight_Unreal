@@ -1,6 +1,7 @@
 ﻿#include "Core/SGameMode.h"
 #include "Core/ASGameState.h"
 #include "Core/SPlayerController.h"
+#include "World/SWorldDefinitionData.h"
 
 ASGameMode::ASGameMode() {
 	GameStateClass = ASGameState::StaticClass();
@@ -13,7 +14,8 @@ void ASGameMode::BeginPlay() {
 	StartWorld();
 }
 
-void ASGameMode::StartWorld() {
+void ASGameMode::StartWorld()
+{
 	SetupNewWorld();
 
 	ASGameState* SGameState = GetGameState<ASGameState>();
@@ -27,7 +29,8 @@ void ASGameMode::StartWorld() {
 	UE_LOG(LogTemp, Log, TEXT("World started."));
 }
 
-void ASGameMode::RequestGameOver() {
+void ASGameMode::RequestGameOver()
+{
 	ASGameState* SGameState = GetGameState<ASGameState>();
 	if (!IsValid(SGameState)) {
 		UE_LOG(LogTemp, Error, TEXT("RequestGameOver failed: ASGameState is invalid."));
@@ -39,12 +42,24 @@ void ASGameMode::RequestGameOver() {
 	UE_LOG(LogTemp, Warning, TEXT("Game Over."));
 }
 
-void ASGameMode::SetupNewWorld() {
+void ASGameMode::SetupNewWorld()
+{
 	ASGameState* SGameState = GetGameState<ASGameState>();
-	if (!IsValid(SGameState)) {
+	if (!IsValid(SGameState))
+	{
 		UE_LOG(LogTemp, Error, TEXT("SetupNewWorld failed: ASGameState is invalid."));
 		return;
 	}
 
-	SGameState->SetWorldTemperature(-12.0f);
+	if (!IsValid(WorldDefinitionData))
+	{
+		UE_LOG(LogTemp, Error, TEXT("SetupNewWorld failed: WorldDefinitionData is not assigned."));
+		return;
+	}
+
+	SGameState->InitializeWorldState(
+		WorldDefinitionData->GetStartingWorldTime(),
+		WorldDefinitionData->GetStartingWorldTemperatureC(),
+		WorldDefinitionData->GetGameMinutesPerRealSecond()
+	);
 }

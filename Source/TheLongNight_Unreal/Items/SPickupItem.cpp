@@ -30,7 +30,7 @@ void ASPickupItem::Interact(AActor* Interactor)
 		return;
 	}
 
-	const bool bAdded = Character->AddItemToInventory(ItemData, 1);
+	const bool bAdded = Character->AddItemToInventory(ItemData, Quantity);
 	if (!bAdded)
 	{
 		return;
@@ -46,8 +46,17 @@ FText ASPickupItem::GetInteractionText() const
 		return FText::FromString(TEXT("Pick up"));
 	}
 
+	if (Quantity <= 1)
+	{
+		return FText::Format(
+			FText::FromString(TEXT("Pick up {0}")),
+			ItemData->GetDisplayName()
+		);
+	}
+
 	return FText::Format(
-		FText::FromString(TEXT("Pick up {0}")),
-		ItemData->GetDisplayName()
+		FText::FromString(TEXT("Pick up {0} x{1}")),
+		ItemData->GetDisplayName(),
+		FText::AsNumber(Quantity)
 	);
 }

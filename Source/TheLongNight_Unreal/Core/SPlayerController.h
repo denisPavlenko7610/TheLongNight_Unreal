@@ -4,7 +4,6 @@
 #include "GameFramework/PlayerController.h"
 #include "SPlayerController.generated.h"
 
-class USInventoryDebugWidget;
 class USInteractionPromptWidget;
 class UInputAction;
 class UInputMappingContext;
@@ -18,8 +17,7 @@ class THELONGNIGHT_UNREAL_API ASPlayerController : public APlayerController
 public:
 	ASPlayerController();
 
-	void UpdateInteractionPrompt();
-
+protected:
 	virtual void BeginPlay() override;
 	virtual void SetupInputComponent() override;
 
@@ -30,14 +28,10 @@ private:
 	void StartSprint();
 	void StopSprint();
 	void TogglePause();
+	void UpdateInteractionPrompt();
 
 	void CreateInteractionPromptWidget();
 
-	void ToggleInventory();
-	void CreateInventoryDebugWidget();
-	void RefreshInventoryDebugWidget();
-
-private:
 	UPROPERTY(EditDefaultsOnly, Category = "Survival|Input")
 	TObjectPtr<UInputMappingContext> GameplayMappingContext;
 
@@ -57,9 +51,6 @@ private:
 	TObjectPtr<UInputAction> PauseAction;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Survival|Input")
-	TObjectPtr<UInputAction> ToggleInventoryAction;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Survival|Input")
 	int32 GameplayMappingPriority = 0;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Survival|UI")
@@ -67,12 +58,6 @@ private:
 
 	UPROPERTY()
 	TObjectPtr<USInteractionPromptWidget> InteractionPromptWidget;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Survival|UI")
-	TSubclassOf<USInventoryDebugWidget> InventoryDebugWidgetClass;
-
-	UPROPERTY()
-	TObjectPtr<USInventoryDebugWidget> InventoryDebugWidget;
 
 	FTimerHandle InteractionPromptTimerHandle;
 

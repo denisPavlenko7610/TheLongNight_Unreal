@@ -2,10 +2,12 @@
 
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Core/ASGameState.h"
+#include "Engine/World.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Interaction/SInteractable.h"
 #include "Inventory/SInventoryComponent.h"
-#include "Items/SItemData.h"
+#include "Survival/SCharacterSurvivalComponent.h"
 
 ASCharacter::ASCharacter()
 {
@@ -30,6 +32,7 @@ ASCharacter::ASCharacter()
     Movement->AirControl = 0.0f;
 
     InventoryComponent = CreateDefaultSubobject<USInventoryComponent>(TEXT("InventoryComponent"));
+    SurvivalComponent = CreateDefaultSubobject<USCharacterSurvivalComponent>(TEXT("SurvivalComponent"));
 }
 
 void ASCharacter::BeginPlay()
@@ -41,6 +44,64 @@ void ASCharacter::BeginPlay()
     {
         Movement->MaxWalkSpeed = WalkSpeed;
     }
+
+    BindToGameTime();
+}
+
+void ASCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+    UnbindFromGameTime();
+
+    Super::EndPlay(EndPlayReason);
+}
+
+void ASCharacter::BindToGameTime()
+{
+    ASGameState* SGameState = GetWorld() ? GetWorld()->GetGameState<ASGameState>() : nullptr;
+    if (!IsValid(SGameState))
+    {
+        UE_LOG(LogTemp, Warning, TEXT("BindToGameTime failed: ASGameState is invalid."));
+        return;
+    }
+
+    SGameState->OnGameMinutePassed.RemoveAll(this);
+
+    SGameState->OnGameMinutePassed.AddUObject(
+        this,
+        &ASCharacter::HandleGameMinutePassed
+    );
+}
+
+void ASCharacter::UnbindFromGameTime()
+{
+    ASGameState* SGameState = GetWorld() ? GetWorld()->GetGameState<ASGameState>() : nullptr;
+    if (!IsValid(SGameState))
+    {
+        return;
+    }
+
+    SGameState->OnGameMinutePassed.RemoveAll(this);
+}
+
+void ASCharacter::HandleGameMinutePassed(float GameMinutes)
+{
+    if (!IsValid(SurvivalComponent))
+    {
+        return;
+    }
+
+    ASGameState* SGameState = GetWorld() ? GetWorld()->GetGameState<ASGameState>() : nullptr;
+    if (!IsValid(SGameState))
+    {
+        return;
+    }
+
+    FSSurvivalEnvironment Environment;
+    Environment.AmbientTemperatureC = SGameState->GetWorldTemperature();
+    Environment.WindChillC = 0.0f;
+    Environment.WarmthBonusC = 0.0f;
+
+    SurvivalComponent->AdvanceSurvival(GameMinutes, Environment);
 }
 
 void ASCharacter::Move(const FVector2D& MoveVector)
@@ -184,4 +245,9 @@ bool ASCharacter::AddItemToInventory(USItemData* ItemData, int32 Quantity)
 USInventoryComponent* ASCharacter::GetInventoryComponent() const
 {
     return InventoryComponent;
+}
+
+USCharacterSurvivalComponent* ASCharacter::GetSurvivalComponent() const
+{
+    return SurvivalComponent;
 }

@@ -6,32 +6,27 @@ public class TheLongNight_Unreal : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
+		PublicIncludePaths.Add(ModuleDirectory);
+
 		PublicDependencyModuleNames.AddRange(
-		[
-			"Core",
-			"CoreUObject",
-			"Engine",
-			"InputCore",
-			"EnhancedInput",
-			"AIModule",
-			"StateTreeModule",
-			"GameplayStateTreeModule",
-			"UMG"
-		]
+			new string[]
+			{
+				"Core",
+				"CoreUObject",
+				"Engine",
+				"InputCore",
+				"EnhancedInput",
+				"UMG"
+			}
 		);
 
-		PrivateDependencyModuleNames.AddRange([]);
-
-		PublicIncludePaths.AddRange(
-		[
-			"TheLongNight_Unreal",
-			"TheLongNight_Unreal/Systems/",
-			"TheLongNight_Unreal/Systems/PickUp"
-		]
+		PrivateDependencyModuleNames.AddRange(
+			new string[]
+			{
+				"Slate",
+				"SlateCore"
+			}
 		);
-
-		// Uncomment if you are using Slate UI
-		PrivateDependencyModuleNames.AddRange(["Slate", "SlateCore", "Engine", "CoreUObject"]);
 
 		// Uncomment if you are using online features
 		// PrivateDependencyModuleNames.Add("OnlineSubsystem");

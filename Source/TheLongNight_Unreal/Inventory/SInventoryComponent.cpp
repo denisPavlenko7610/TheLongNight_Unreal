@@ -38,29 +38,58 @@ bool USInventoryComponent::AddItem(USItemData* ItemData, int32 Quantity)
         return false;
     }
 
-    FSInventoryEntry* ExistingEntry = FindEntryMutable(ItemData);
-    if (ExistingEntry)
+    int32 RemainingQuantity = Quantity;
+
+    if (ItemData->CanStack())
     {
-        ExistingEntry->Quantity += Quantity;
+        const int32 MaxStackSize = ItemData->GetMaxStackSize();
+
+        for (FSInventoryEntry& Entry : Items)
+        {
+            if (Entry.ItemData != ItemData)
+            {
+                continue;
+            }
+
+            if (Entry.Quantity >= MaxStackSize)
+            {
+                continue;
+            }
+
+            const int32 FreeSpace = MaxStackSize - Entry.Quantity;
+            const int32 QuantityToAdd = FMath::Min(FreeSpace, RemainingQuantity);
+
+            Entry.Quantity += QuantityToAdd;
+            RemainingQuantity -= QuantityToAdd;
+
+            if (RemainingQuantity <= 0)
+            {
+                break;
+            }
+        }
+
+        while (RemainingQuantity > 0)
+        {
+            FSInventoryEntry NewEntry;
+            NewEntry.ItemData = ItemData;
+            NewEntry.Quantity = FMath::Min(MaxStackSize, RemainingQuantity);
+
+            Items.Add(NewEntry);
+
+            RemainingQuantity -= NewEntry.Quantity;
+        }
     }
     else
     {
-        FSInventoryEntry NewEntry;
-        NewEntry.ItemData = ItemData;
-        NewEntry.Quantity = Quantity;
+        for (int32 Index = 0; Index < RemainingQuantity; ++Index)
+        {
+            FSInventoryEntry NewEntry;
+            NewEntry.ItemData = ItemData;
+            NewEntry.Quantity = 1;
 
-        Items.Add(NewEntry);
+            Items.Add(NewEntry);
+        }
     }
-
-    UE_LOG(
-        LogTemp,
-        Log,
-        TEXT("Added item: %s x%d. Total weight: %.2f / %.2f kg"),
-        *ItemData->GetDisplayName().ToString(),
-        Quantity,
-        GetCurrentWeightKg(),
-        MaxWeightKg
-    );
 
     return true;
 }
@@ -151,24 +180,6 @@ int32 USInventoryComponent::GetTotalItemCount() const
 
 const TArray<FSInventoryEntry>& USInventoryComponent::GetItems() const {
     return Items;
-}
-
-FSInventoryEntry* USInventoryComponent::FindEntryMutable(USItemData* ItemData)
-{
-    if (!IsValid(ItemData))
-    {
-        return nullptr;
-    }
-
-    for (FSInventoryEntry& Entry : Items)
-    {
-        if (Entry.ItemData == ItemData)
-        {
-            return &Entry;
-        }
-    }
-
-    return nullptr;
 }
 
 const FSInventoryEntry* USInventoryComponent::FindEntry(USItemData* ItemData) const
