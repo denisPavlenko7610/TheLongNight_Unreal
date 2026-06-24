@@ -44,16 +44,15 @@ public:
 		}
 		else
 		{
-			const int32 MinutesInDay = 24 * 60;
-			const int32 WrappedRangeLength = (MinutesInDay - MinMinutes) + MaxMinutes + 1;
+			const int32 WrappedRangeLength = (STimeConstants::MinutesPerDay - MinMinutes) + MaxMinutes + 1;
 			const int32 RandomOffset = FMath::RandRange(0, WrappedRangeLength - 1);
 
-			RandomMinutes = (MinMinutes + RandomOffset) % MinutesInDay;
+			RandomMinutes = (MinMinutes + RandomOffset) % STimeConstants::MinutesPerDay;
 		}
 
 		FSWorldTime Result = StartingWorldTime;
-		Result.Hour = RandomMinutes / 60;
-		Result.Minute = RandomMinutes % 60;
+		Result.Hour = RandomMinutes / STimeConstants::MinutesPerHour;
+		Result.Minute = RandomMinutes % STimeConstants::MinutesPerHour;
 
 		return Result;
 	}
@@ -93,11 +92,11 @@ private:
 
 	int32 GetRandomStartMinMinutes() const
 	{
-		return FMath::Clamp(RandomStartMinHour * 60 + RandomStartMinMinute, 0, 24 * 60 - 1);
+		return FMath::Clamp(RandomStartMinHour * STimeConstants::MinutesPerHour + RandomStartMinMinute, 0, STimeConstants::MinutesPerDay - 1);
 	}
 
 	int32 GetRandomStartMaxMinutes() const
 	{
-		return FMath::Clamp(RandomStartMaxHour * 60 + RandomStartMaxMinute, 0, 24 * 60 - 1);
+		return FMath::Clamp(RandomStartMaxHour * STimeConstants::MinutesPerHour + RandomStartMaxMinute, 0, STimeConstants::MinutesPerDay - 1);
 	}
 };

@@ -1,5 +1,11 @@
 ﻿#include "Survival/SCharacterSurvivalComponent.h"
 
+namespace
+{
+	constexpr float MinVitalPercent = 0.0f;
+	constexpr float MaxVitalPercent = 100.0f;
+}
+
 USCharacterSurvivalComponent::USCharacterSurvivalComponent()
 {
     PrimaryComponentTick.bCanEverTick = false;
@@ -170,10 +176,10 @@ void USCharacterSurvivalComponent::ApplyConditionDamage(float GameMinutes)
 
 void USCharacterSurvivalComponent::ClampValues()
 {
-    Vitals.Condition = FMath::Clamp(Vitals.Condition, 0.0f, 100.0f);
-    Vitals.Calories = FMath::Max(0.0f, Vitals.Calories);
-    Vitals.Thirst = FMath::Clamp(Vitals.Thirst, 0.0f, 100.0f);
-    Vitals.Fatigue = FMath::Clamp(Vitals.Fatigue, 0.0f, 100.0f);
+    Vitals.Condition = FMath::Clamp(Vitals.Condition, MinVitalPercent, MaxVitalPercent);
+    Vitals.Calories = FMath::Max(MinVitalPercent, Vitals.Calories);
+    Vitals.Thirst = FMath::Clamp(Vitals.Thirst, MinVitalPercent, MaxVitalPercent);
+    Vitals.Fatigue = FMath::Clamp(Vitals.Fatigue, MinVitalPercent, MaxVitalPercent);
     if (IsValid(TuningData))
     {
         Vitals.BodyTemperature = FMath::Min(Vitals.BodyTemperature, TuningData->Temperature.NormalBodyTemperatureC);

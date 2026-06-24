@@ -9,15 +9,22 @@
 #include "Inventory/SInventoryComponent.h"
 #include "Survival/SCharacterSurvivalComponent.h"
 
+namespace
+{
+	constexpr float CapsuleHalfHeight = 96.0f;
+	constexpr float CapsuleRadius = 42.0f;
+	constexpr float FirstPersonCameraZOffset = 64.0f;
+}
+
 ASCharacter::ASCharacter()
 {
     PrimaryActorTick.bCanEverTick = false;
 
-    GetCapsuleComponent()->InitCapsuleSize(42.0f, 96.0f);
+    GetCapsuleComponent()->InitCapsuleSize(CapsuleRadius, CapsuleHalfHeight);
 
     FirstPersonCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
     FirstPersonCamera->SetupAttachment(GetCapsuleComponent());
-    FirstPersonCamera->SetRelativeLocation(FVector(0.0f, 0.0f, 64.0f));
+    FirstPersonCamera->SetRelativeLocation(FVector(0.0f, 0.0f, FirstPersonCameraZOffset));
     FirstPersonCamera->bUsePawnControlRotation = true;
 
     bUseControllerRotationYaw = true;

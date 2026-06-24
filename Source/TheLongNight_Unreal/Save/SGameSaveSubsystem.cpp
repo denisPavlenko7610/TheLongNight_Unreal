@@ -10,6 +10,11 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Survival/SCharacterSurvivalComponent.h"
 
+namespace
+{
+	constexpr int32 DefaultSaveUserIndex = 0;
+}
+
 bool USGameSaveSubsystem::SaveCurrentGame(const FString& SlotName)
 {
 	if (SlotName.IsEmpty())
@@ -33,7 +38,7 @@ bool USGameSaveSubsystem::SaveCurrentGame(const FString& SlotName)
 	const bool bSaved = UGameplayStatics::SaveGameToSlot(
 		SaveObject,
 		SlotName,
-		0
+		DefaultSaveUserIndex
 	);
 
 	UE_LOG(
@@ -218,7 +223,7 @@ bool USGameSaveSubsystem::LoadCurrentGame(const FString& SlotName)
 		return false;
 	}
 
-	USaveGame* LoadedObject = UGameplayStatics::LoadGameFromSlot(SlotName, 0);
+	USaveGame* LoadedObject = UGameplayStatics::LoadGameFromSlot(SlotName, DefaultSaveUserIndex);
 	USGameSaveObject* GameSaveObject = Cast<USGameSaveObject>(LoadedObject);
 
 	if (!IsValid(GameSaveObject))

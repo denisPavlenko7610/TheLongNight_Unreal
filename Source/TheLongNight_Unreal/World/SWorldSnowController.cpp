@@ -8,6 +8,26 @@
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Materials/MaterialInterface.h"
 
+namespace
+{
+	constexpr int32 MinSnowParticleCount = 20000;
+	constexpr int32 SnowLayerCount = 2;
+	constexpr int32 SnowBackfillSeedOffset = 7919;
+
+	constexpr float SnowRadiusMin = 600.0f;
+	constexpr float SnowRadiusMax = 6000.0f;
+	constexpr float SnowHeightMin = 2200.0f;
+	constexpr float SnowHeightMax = 6500.0f;
+	constexpr float SnowScaleMin = 0.020f;
+	constexpr float SnowScaleMax = 0.12f;
+
+	constexpr float SnowFallSpeedMin = 20.0f;
+	constexpr float SnowFallSpeedMax = 320.0f;
+	constexpr float SnowRespawnIntervalMin = 1.0f;
+
+	const FLinearColor SnowSubtleGlow(0.25f, 0.25f, 0.30f, 0.5f);
+}
+
 ASWorldSnowController::ASWorldSnowController()
 {
 	PrimaryActorTick.bCanEverTick = true;
@@ -83,16 +103,14 @@ void ASWorldSnowController::LoadAssets()
 		SnowMaterialInstance = UMaterialInstanceDynamic::Create(ActiveSnowMaterial, this);
 		SnowBackfillMaterialInstance = UMaterialInstanceDynamic::Create(ActiveSnowMaterial, this);
 
-		const FLinearColor SubtleGlow(0.25f, 0.25f, 0.30f, 0.5f);
-
 		if (IsValid(SnowMaterialInstance.Get()))
 		{
-			SnowMaterialInstance->SetVectorParameterValue(TEXT("EmissiveColor"), SubtleGlow);
+			SnowMaterialInstance->SetVectorParameterValue(TEXT("EmissiveColor"), SnowSubtleGlow);
 			SnowComponent->SetMaterial(0, SnowMaterialInstance.Get());
 		}
 		if (IsValid(SnowBackfillMaterialInstance.Get()))
 		{
-			SnowBackfillMaterialInstance->SetVectorParameterValue(TEXT("EmissiveColor"), SubtleGlow);
+			SnowBackfillMaterialInstance->SetVectorParameterValue(TEXT("EmissiveColor"), SnowSubtleGlow);
 			SnowBackfillComponent->SetMaterial(0, SnowBackfillMaterialInstance.Get());
 		}
 	}
@@ -108,10 +126,10 @@ void ASWorldSnowController::BuildSnowField()
 	SnowComponent->ClearInstances();
 	SnowBackfillComponent->ClearInstances();
 
-	const int32 ParticleCount = FMath::Max(20000, SnowParticleCount);
-	const int32 PrimaryParticleCount = ParticleCount / 2;
+	const int32 ParticleCount = FMath::Max(MinSnowParticleCount, SnowParticleCount);
+	const int32 PrimaryParticleCount = ParticleCount / SnowLayerCount;
 	BuildSnowLayer(SnowComponent.Get(), PrimaryParticleCount, SnowRandomSeed);
-	BuildSnowLayer(SnowBackfillComponent.Get(), ParticleCount - PrimaryParticleCount, SnowRandomSeed + 7919);
+	BuildSnowLayer(SnowBackfillComponent.Get(), ParticleCount - PrimaryParticleCount, SnowRandomSeed + SnowBackfillSeedOffset);
 
 	bSnowBuilt = true;
 }
@@ -128,10 +146,10 @@ void ASWorldSnowController::BuildSnowLayer(
 	}
 
 	FRandomStream RandomStream(Seed);
-	const float EffectiveRadius = FMath::Clamp(SnowRadius, 600.0f, 6000.0f);
-	const float EffectiveHeight = FMath::Clamp(SnowSpawnHeight, 2200.0f, 6500.0f);
-	const float EffectiveMinScale = FMath::Clamp(SnowMinScale, 0.020f, 0.12f);
-	const float EffectiveMaxScale = FMath::Clamp(SnowMaxScale, EffectiveMinScale, 0.12f);
+	const float EffectiveRadius = FMath::Clamp(SnowRadius, SnowRadiusMin, SnowRadiusMax);
+	const float EffectiveHeight = FMath::Clamp(SnowSpawnHeight, SnowHeightMin, SnowHeightMax);
+	const float EffectiveMinScale = FMath::Clamp(SnowMinScale, SnowScaleMin, SnowScaleMax);
+	const float EffectiveMaxScale = FMath::Clamp(SnowMaxScale, EffectiveMinScale, SnowScaleMax);
 
 	for (int32 ParticleIndex = 0; ParticleIndex < ParticleCount; ++ParticleIndex)
 	{
@@ -182,14 +200,14 @@ void ASWorldSnowController::UpdateSnow(float DeltaSeconds)
 	}
 
 	SnowRespawnTimer += DeltaSeconds;
-	if (SnowRespawnTimer >= FMath::Max(1.0f, SnowRespawnInterval))
+	if (SnowRespawnTimer >= FMath::Max(SnowRespawnIntervalMin, SnowRespawnInterval))
 	{
 		SnowRespawnTimer = 0.0f;
 		SnowFieldCenter = GetViewerLocation();
 	}
 
-	const float EffectiveHeight = FMath::Clamp(SnowSpawnHeight, 2200.0f, 6500.0f);
-	const float EffectiveFallSpeed = FMath::Clamp(SnowFallSpeed, 20.0f, 320.0f);
+	const float EffectiveHeight = FMath::Clamp(SnowSpawnHeight, SnowHeightMin, SnowHeightMax);
+	const float EffectiveFallSpeed = FMath::Clamp(SnowFallSpeed, SnowFallSpeedMin, SnowFallSpeedMax);
 	SnowFallOffset = FMath::Fmod(SnowFallOffset + EffectiveFallSpeed * DeltaSeconds, EffectiveHeight);
 
 	const FVector BaseLocation(

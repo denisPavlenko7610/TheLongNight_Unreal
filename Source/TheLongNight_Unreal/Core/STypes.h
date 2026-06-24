@@ -3,6 +3,15 @@
 #include "CoreMinimal.h"
 #include "STypes.generated.h"
 
+namespace STimeConstants
+{
+	constexpr int32 MinutesPerHour = 60;
+	constexpr int32 HoursPerDay = 24;
+	constexpr int32 MinutesPerDay = MinutesPerHour * HoursPerDay; // 1440
+	constexpr float MinutesPerHourF = 60.0f;
+	constexpr float MinutesPerDayF = 1440.0f;
+}
+
 UENUM()
 enum class ESTypes : uint8
 {
@@ -52,27 +61,27 @@ struct THELONGNIGHT_UNREAL_API FSWorldTime
 
 		Minute += MinutesToAdd;
 
-		while (Minute >= 60)
+		while (Minute >= STimeConstants::MinutesPerHour)
 		{
-			Minute -= 60;
+			Minute -= STimeConstants::MinutesPerHour;
 			Hour++;
 		}
 
-		while (Hour >= 24)
+		while (Hour >= STimeConstants::HoursPerDay)
 		{
-			Hour -= 24;
+			Hour -= STimeConstants::HoursPerDay;
 			Day++;
 		}
 	}
 
 	int32 GetTotalMinutes() const
 	{
-		return (Day - 1) * 24 * 60 + Hour * 60 + Minute;
+		return (Day - 1) * STimeConstants::MinutesPerDay + Hour * STimeConstants::MinutesPerHour + Minute;
 	}
 
 	int32 GetMinutesSinceMidnight() const
 	{
-		return Hour * 60 + Minute;
+		return Hour * STimeConstants::MinutesPerHour + Minute;
 	}
 };
 
@@ -107,21 +116,21 @@ struct THELONGNIGHT_UNREAL_API FSDayNightSettings
 
 	int32 GetDawnStartMinutes() const
 	{
-		return DawnStartHour * 60 + DawnStartMinute;
+		return DawnStartHour * STimeConstants::MinutesPerHour + DawnStartMinute;
 	}
 
 	int32 GetDayStartMinutes() const
 	{
-		return DayStartHour * 60 + DayStartMinute;
+		return DayStartHour * STimeConstants::MinutesPerHour + DayStartMinute;
 	}
 
 	int32 GetDuskStartMinutes() const
 	{
-		return DuskStartHour * 60 + DuskStartMinute;
+		return DuskStartHour * STimeConstants::MinutesPerHour + DuskStartMinute;
 	}
 
 	int32 GetNightStartMinutes() const
 	{
-		return NightStartHour * 60 + NightStartMinute;
+		return NightStartHour * STimeConstants::MinutesPerHour + NightStartMinute;
 	}
 };

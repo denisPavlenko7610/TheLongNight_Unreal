@@ -7,6 +7,7 @@
 #include "Components/SkyLightComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Core/ASGameState.h"
+#include "Core/STypes.h"
 #include "Engine/DirectionalLight.h"
 #include "Engine/SkyLight.h"
 #include "Engine/StaticMesh.h"
@@ -18,7 +19,8 @@
 
 namespace
 {
-	constexpr float MinutesInDay = 24.0f * 60.0f;
+	using namespace STimeConstants;
+
 	constexpr int32 StarCount = 900;
 	constexpr float StarDistance = 30000.0f;
 
@@ -26,6 +28,35 @@ namespace
 	const FLinearColor NightMoonColor(0.34f, 0.48f, 0.95f, 1.0f);
 	const FLinearColor DaySkyColor(0.70f, 0.82f, 1.0f, 1.0f);
 	const FLinearColor NightSkyColor(0.16f, 0.25f, 0.50f, 1.0f);
+
+	constexpr float FullCircleYaw = 360.0f;
+	constexpr float SunHeightToRotation = 90.0f;
+	constexpr float MoonYawOffset = 180.0f;
+	constexpr float MoonHeightToDirection = 70.0f;
+
+	constexpr int32 SunForwardShadingPriority = 2;
+	constexpr int32 DefaultForwardShadingPriority = 0;
+	constexpr int32 DefaultAtmosphereSunLightIndex = 0;
+
+	constexpr float MoonMaterialBrightnessMultiplier = 1.6f;
+	constexpr float StarMaterialBrightnessMultiplier = 10.0f;
+
+	constexpr float LightingActorRefreshInterval = 0.5f;
+
+	constexpr float SunVisibilityHeightOffset = 0.15f;
+	constexpr float SunVisibilityHeightRange = 1.15f;
+	constexpr float MoonVisibilityThreshold = 0.12f;
+
+	constexpr float DirectSunAlphaRangeStart = 0.03f;
+	constexpr float DirectSunAlphaRangeEnd = 0.45f;
+	constexpr float MoonIntensityMin = 0.85f;
+	constexpr float MoonVisibilityAlphaRangeStart = 0.05f;
+	constexpr float MoonVisibilityAlphaRangeEnd = 0.7f;
+	constexpr float SkyIntensityMin = 0.8f;
+
+	constexpr float VisualTimeSourceDeltaThreshold = 60.0f;
+	constexpr float VisualTimeScaleMin = 0.01f;
+	constexpr float VisualTimeScaleMax = 1.0f;
 
 	float SmoothRange(float From, float To, float Value)
 	{
@@ -94,7 +125,7 @@ void ASWorldLightingController::Tick(float DeltaSeconds)
 	Super::Tick(DeltaSeconds);
 
 	LightingActorRefreshTimer += DeltaSeconds;
-	if (LightingActorRefreshTimer >= 0.5f)
+	if (LightingActorRefreshTimer >= LightingActorRefreshInterval)
 	{
 		LightingActorRefreshTimer = 0.0f;
 		AutoBindLightingActors();
@@ -123,7 +154,7 @@ void ASWorldLightingController::AutoBindLightingActors()
 
 		if (UDirectionalLightComponent* LightComponent = Cast<UDirectionalLightComponent>(DirectionalLight->GetLightComponent()))
 		{
-			LightComponent->SetForwardShadingPriority(0);
+			LightComponent->SetForwardShadingPriority(DefaultForwardShadingPriority);
 			if (LightComponent->Intensity > BestIntensity)
 			{
 				BestIntensity = LightComponent->Intensity;
@@ -142,9 +173,9 @@ void ASWorldLightingController::AutoBindLightingActors()
 		SunLight->SetActorHiddenInGame(false);
 		if (UDirectionalLightComponent* LightComponent = Cast<UDirectionalLightComponent>(SunLight->GetLightComponent()))
 		{
-			LightComponent->SetForwardShadingPriority(2);
+			LightComponent->SetForwardShadingPriority(SunForwardShadingPriority);
 			LightComponent->SetAtmosphereSunLight(true);
-			LightComponent->SetAtmosphereSunLightIndex(0);
+			LightComponent->SetAtmosphereSunLightIndex(DefaultAtmosphereSunLightIndex);
 			LightComponent->SetVisibility(true, true);
 		}
 	}
@@ -194,15 +225,15 @@ void ASWorldLightingController::DisableCompetingDirectionalLights() const
 		if (DirectionalLight == SunLight)
 		{
 			DirectionalLight->SetActorHiddenInGame(false);
-			LightComponent->SetForwardShadingPriority(2);
+			LightComponent->SetForwardShadingPriority(SunForwardShadingPriority);
 			LightComponent->SetAtmosphereSunLight(true);
-			LightComponent->SetAtmosphereSunLightIndex(0);
+			LightComponent->SetAtmosphereSunLightIndex(DefaultAtmosphereSunLightIndex);
 			LightComponent->SetVisibility(true, true);
 			continue;
 		}
 
 		DirectionalLight->SetActorHiddenInGame(true);
-		LightComponent->SetForwardShadingPriority(0);
+		LightComponent->SetForwardShadingPriority(DefaultForwardShadingPriority);
 		LightComponent->SetAtmosphereSunLight(false);
 		LightComponent->SetVisibility(false, true);
 		LightComponent->SetIntensity(0.0f);
@@ -228,16 +259,16 @@ void ASWorldLightingController::LoadGeneratedAssets()
 
 	if (IsValid(MoonMaterialInstance.Get()))
 	{
-		MoonMaterialInstance->SetVectorParameterValue(TEXT("Color"), NightMoonColor * 1.6f);
-		MoonMaterialInstance->SetVectorParameterValue(TEXT("EmissiveColor"), NightMoonColor * 1.6f);
+		MoonMaterialInstance->SetVectorParameterValue(TEXT("Color"), NightMoonColor * MoonMaterialBrightnessMultiplier);
+		MoonMaterialInstance->SetVectorParameterValue(TEXT("EmissiveColor"), NightMoonColor * MoonMaterialBrightnessMultiplier);
 		MoonMeshComponent->SetMaterial(0, MoonMaterialInstance.Get());
 	}
 
 	if (IsValid(StarMaterialInstance.Get()))
 	{
 		const FLinearColor StarColor(0.70f, 0.84f, 1.0f, 1.0f);
-		StarMaterialInstance->SetVectorParameterValue(TEXT("Color"), StarColor * 10.0f);
-		StarMaterialInstance->SetVectorParameterValue(TEXT("EmissiveColor"), StarColor * 10.0f);
+		StarMaterialInstance->SetVectorParameterValue(TEXT("Color"), StarColor * StarMaterialBrightnessMultiplier);
+		StarMaterialInstance->SetVectorParameterValue(TEXT("EmissiveColor"), StarColor * StarMaterialBrightnessMultiplier);
 		StarsComponent->SetMaterial(0, StarMaterialInstance.Get());
 	}
 }
@@ -273,10 +304,10 @@ void ASWorldLightingController::UpdateLighting(float DeltaSecond)
 	const float MoonHeight = -SunHeight;
 	const float SunVisibilityAlpha = GetSunVisibilityAlpha(SunHeight);
 	const float MoonVisibilityAlpha = GetSunVisibilityAlpha(MoonHeight) * (1.0f - SunVisibilityAlpha);
-	const float DirectSunAlpha = SmoothRange(0.03f, 0.45f, SunVisibilityAlpha);
+	const float DirectSunAlpha = SmoothRange(DirectSunAlphaRangeStart, DirectSunAlphaRangeEnd, SunVisibilityAlpha);
 
-	const float SunYaw = SunYawOffset + DayAlpha * 360.0f;
-	const FRotator SunRotation(-SunHeight * 90.0f, SunYaw, 0.0f);
+	const float SunYaw = SunYawOffset + DayAlpha * FullCircleYaw;
+	const FRotator SunRotation(-SunHeight * SunHeightToRotation, SunYaw, 0.0f);
 
 	if (IsValid(SunLight))
 	{
@@ -291,8 +322,8 @@ void ASWorldLightingController::UpdateLighting(float DeltaSecond)
 
 	if (IsValid(MoonLightComponent))
 	{
-		MoonLightComponent->SetWorldRotation(FRotator(-MoonHeight * 90.0f, SunYaw + 180.0f, 0.0f));
-		MoonLightComponent->SetIntensity(FMath::Max(0.85f, NightMoonIntensity) * SmoothRange(0.05f, 0.7f, MoonVisibilityAlpha));
+		MoonLightComponent->SetWorldRotation(FRotator(-MoonHeight * SunHeightToRotation, SunYaw + MoonYawOffset, 0.0f));
+		MoonLightComponent->SetIntensity(FMath::Max(MoonIntensityMin, NightMoonIntensity) * SmoothRange(MoonVisibilityAlphaRangeStart, MoonVisibilityAlphaRangeEnd, MoonVisibilityAlpha));
 		MoonLightComponent->SetLightColor(NightMoonColor);
 	}
 
@@ -307,7 +338,7 @@ void ASWorldLightingController::UpdateLighting(float DeltaSecond)
 
 	if (IsValid(ActiveSkyLightComponent))
 	{
-		ActiveSkyLightComponent->SetIntensity(FMath::Lerp(FMath::Max(0.8f, NightSkyIntensity), DaySkyIntensity, SunVisibilityAlpha));
+		ActiveSkyLightComponent->SetIntensity(FMath::Lerp(FMath::Max(SkyIntensityMin, NightSkyIntensity), DaySkyIntensity, SunVisibilityAlpha));
 		ActiveSkyLightComponent->SetLightColor(FLinearColor::LerpUsingHSV(NightSkyColor, DaySkyColor, SunVisibilityAlpha));
 	}
 
@@ -325,26 +356,26 @@ float ASWorldLightingController::GetVisualMinutesSinceMidnight(float SourceMinut
 	}
 
 	float SourceDelta = SourceMinutesSinceMidnight - LastSourceMinutesSinceMidnight;
-	if (SourceDelta > MinutesInDay * 0.5f)
+	if (SourceDelta > MinutesPerDayF * 0.5f)
 	{
-		SourceDelta -= MinutesInDay;
+		SourceDelta -= MinutesPerDayF;
 	}
-	else if (SourceDelta < -MinutesInDay * 0.5f)
+	else if (SourceDelta < -MinutesPerDayF * 0.5f)
 	{
-		SourceDelta += MinutesInDay;
+		SourceDelta += MinutesPerDayF;
 	}
 
 	LastSourceMinutesSinceMidnight = SourceMinutesSinceMidnight;
 
-	if (FMath::Abs(SourceDelta) > 60.0f)
+	if (FMath::Abs(SourceDelta) > VisualTimeSourceDeltaThreshold)
 	{
 		VisualMinutesSinceMidnight = SourceMinutesSinceMidnight;
 		return VisualMinutesSinceMidnight;
 	}
 
 	VisualMinutesSinceMidnight = FMath::Fmod(
-		VisualMinutesSinceMidnight + SourceDelta * FMath::Clamp(VisualTimeScale, 0.01f, 1.0f) + MinutesInDay,
-		MinutesInDay
+		VisualMinutesSinceMidnight + SourceDelta * FMath::Clamp(VisualTimeScale, VisualTimeScaleMin, VisualTimeScaleMax) + MinutesPerDayF,
+		MinutesPerDayF
 	);
 
 	return VisualMinutesSinceMidnight;
@@ -353,14 +384,14 @@ float ASWorldLightingController::GetVisualMinutesSinceMidnight(float SourceMinut
 void ASWorldLightingController::UpdateSkyVisuals(float DayAlpha, float NightAlpha)
 {
 	const FVector ViewerLocation = GetViewerLocation();
-	const float SunYaw = SunYawOffset + DayAlpha * 360.0f;
+	const float SunYaw = SunYawOffset + DayAlpha * FullCircleYaw;
 	const float MoonHeight = -GetSunHeight(DayAlpha);
 	const float MoonVisibilityAlpha = GetSunVisibilityAlpha(MoonHeight) * NightAlpha;
-	const FVector MoonDirection = FRotationMatrix(FRotator(MoonHeight * 70.0f, SunYaw + 180.0f, 0.0f)).GetUnitAxis(EAxis::X);
+	const FVector MoonDirection = FRotationMatrix(FRotator(MoonHeight * MoonHeightToDirection, SunYaw + MoonYawOffset, 0.0f)).GetUnitAxis(EAxis::X);
 
 	if (IsValid(MoonMeshComponent))
 	{
-		MoonMeshComponent->SetHiddenInGame(MoonVisibilityAlpha < 0.12f);
+		MoonMeshComponent->SetHiddenInGame(MoonVisibilityAlpha < MoonVisibilityThreshold);
 		MoonMeshComponent->SetWorldLocation(ViewerLocation + MoonDirection * MoonDistance);
 		MoonMeshComponent->SetWorldScale3D(FVector(MoonVisualScale));
 	}
@@ -389,7 +420,7 @@ FVector ASWorldLightingController::GetViewerLocation() const
 
 float ASWorldLightingController::GetDayAlpha(float MinutesSinceMidnight) const
 {
-	return FMath::Clamp(MinutesSinceMidnight / MinutesInDay, 0.0f, 1.0f);
+	return FMath::Clamp(MinutesSinceMidnight / MinutesPerDayF, 0.0f, 1.0f);
 }
 
 float ASWorldLightingController::GetSunHeight(float DayAlpha) const
@@ -399,5 +430,5 @@ float ASWorldLightingController::GetSunHeight(float DayAlpha) const
 
 float ASWorldLightingController::GetSunVisibilityAlpha(float Height) const
 {
-	return FMath::Clamp((Height + 0.15f) / 1.15f, 0.0f, 1.0f);
+	return FMath::Clamp((Height + SunVisibilityHeightOffset) / SunVisibilityHeightRange, 0.0f, 1.0f);
 }

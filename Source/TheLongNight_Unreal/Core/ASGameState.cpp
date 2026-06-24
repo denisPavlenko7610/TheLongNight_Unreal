@@ -1,5 +1,10 @@
 ﻿#include "Core/ASGameState.h"
 
+namespace
+{
+	constexpr float MinTimeAccumulatorForTick = 1.0f;
+}
+
 ASGameState::ASGameState()
 {
 	PrimaryActorTick.bCanEverTick = true;
@@ -26,7 +31,7 @@ void ASGameState::AdvanceWorldTime(float RealDeltaSeconds)
 
 	TimeAccumulator += RealDeltaSeconds * GameMinutesPerRealSecond;
 
-	if (TimeAccumulator < 1.0f)
+	if (TimeAccumulator < MinTimeAccumulatorForTick)
 	{
 		return;
 	}
@@ -90,12 +95,12 @@ void ASGameState::BroadcastTimeEvents(int32 PreviousTotalMinutes, int32 NewTotal
 	{
 		OnGameMinutePassed.Broadcast(1.0f);
 
-		if (Minute % 60 == 0)
+		if (Minute % STimeConstants::MinutesPerHour == 0)
 		{
 			OnGameHourPassed.Broadcast();
 		}
 
-		if (Minute % (24 * 60) == 0)
+		if (Minute % STimeConstants::MinutesPerDay == 0)
 		{
 			OnGameDayPassed.Broadcast();
 		}
@@ -114,11 +119,9 @@ const FSWorldTime& ASGameState::GetWorldTime() const
 
 float ASGameState::GetPreciseMinutesSinceMidnight() const
 {
-	constexpr float MinutesInDay = 24.0f * 60.0f;
-
 	return FMath::Fmod(
-		static_cast<float>(WorldTime.GetMinutesSinceMidnight()) + TimeAccumulator + MinutesInDay,
-		MinutesInDay
+		static_cast<float>(WorldTime.GetMinutesSinceMidnight()) + TimeAccumulator + STimeConstants::MinutesPerDayF,
+		STimeConstants::MinutesPerDayF
 	);
 }
 
