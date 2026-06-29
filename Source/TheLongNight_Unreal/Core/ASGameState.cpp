@@ -1,9 +1,5 @@
 ﻿#include "Core/ASGameState.h"
-
-namespace
-{
-	constexpr float MinTimeAccumulatorForTick = 1.0f;
-}
+#include "Core/SMathUtils.h"
 
 ASGameState::ASGameState()
 {
@@ -24,6 +20,8 @@ void ASGameState::Tick(float DeltaSeconds)
 
 void ASGameState::AdvanceWorldTime(float RealDeltaSeconds)
 {
+	constexpr float MinTimeAccumulatorForTick = 1.0f;
+
 	if (RealDeltaSeconds <= 0.0f)
 	{
 		return;
@@ -128,6 +126,77 @@ float ASGameState::GetPreciseMinutesSinceMidnight() const
 float ASGameState::GetWorldTemperature() const
 {
 	return WorldTemperature;
+}
+
+float ASGameState::GetEffectiveWorldTemperature() const
+{
+	return WorldTemperature + GetTimeOfDayTemperatureModifier();
+}
+
+float ASGameState::GetTimeOfDayTemperatureModifier() const
+{
+	return DetermineTimeOfDayTemperatureModifier(GetPreciseMinutesSinceMidnight());
+}
+
+float ASGameState::DetermineTimeOfDayTemperatureModifier(float MinutesSinceMidnight) const
+{
+    struct FSTemperatureCurvePoint
+    {
+        float TimeMinutes = 0.0f;
+        float TemperatureModifierC = 0.0f;
+    };
+
+    constexpr int32 TemperatureCurvePointCount = 5;
+
+    const float DawnStart = static_cast<float>(DayNightSettings.GetDawnStartMinutes());
+    const float DayStart = static_cast<float>(DayNightSettings.GetDayStartMinutes());
+    const float DuskStart = static_cast<float>(DayNightSettings.GetDuskStartMinutes());
+    const float NightStart = static_cast<float>(DayNightSettings.GetNightStartMinutes());
+
+    float CurrentMinutes = MinutesSinceMidnight;
+
+    if (CurrentMinutes < DawnStart)
+    {
+        CurrentMinutes += STimeConstants::MinutesPerDayF;
+    }
+
+    const FSTemperatureCurvePoint TemperatureCurve[TemperatureCurvePointCount]
+    {
+        { DawnStart, DayNightSettings.DawnTemperatureModifierC },
+        { DayStart, DayNightSettings.DayTemperatureModifierC },
+        { DuskStart, DayNightSettings.DuskTemperatureModifierC },
+        { NightStart, DayNightSettings.NightTemperatureModifierC },
+        { DawnStart + STimeConstants::MinutesPerDayF, DayNightSettings.DawnTemperatureModifierC }
+    };
+
+    const int32 LastCurvePointIndex = TemperatureCurvePointCount - 1;
+
+    for (int32 SegmentIndex = 0; SegmentIndex < LastCurvePointIndex; ++SegmentIndex)
+    {
+        const FSTemperatureCurvePoint& SegmentStart = TemperatureCurve[SegmentIndex];
+        const FSTemperatureCurvePoint& SegmentEnd = TemperatureCurve[SegmentIndex + 1];
+
+        if (CurrentMinutes < SegmentStart.TimeMinutes || CurrentMinutes > SegmentEnd.TimeMinutes)
+        {
+            continue;
+        }
+
+        const float SegmentAlpha = SMathUtils::InverseLerp(
+            SegmentStart.TimeMinutes,
+            SegmentEnd.TimeMinutes,
+            CurrentMinutes
+        );
+
+        const float SmoothedAlpha = SMathUtils::SmoothStep01(SegmentAlpha);
+
+        return FMath::Lerp(
+            SegmentStart.TemperatureModifierC,
+            SegmentEnd.TemperatureModifierC,
+            SmoothedAlpha
+        );
+    }
+
+    return DayNightSettings.DayTemperatureModifierC;
 }
 
 void ASGameState::SetGamePhase(ESGamePhase NewGamePhase)

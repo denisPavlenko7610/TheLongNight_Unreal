@@ -13,6 +13,7 @@
 #include "Engine/StaticMesh.h"
 #include "Engine/World.h"
 #include "EngineUtils.h"
+#include "Core/SMathUtils.h"
 #include "GameFramework/PlayerController.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Materials/MaterialInterface.h"
@@ -57,12 +58,6 @@ namespace
 	constexpr float VisualTimeSourceDeltaThreshold = 60.0f;
 	constexpr float VisualTimeScaleMin = 0.01f;
 	constexpr float VisualTimeScaleMax = 1.0f;
-
-	float SmoothRange(float From, float To, float Value)
-	{
-		const float Alpha = FMath::Clamp((Value - From) / (To - From), 0.0f, 1.0f);
-		return Alpha * Alpha * (3.0f - 2.0f * Alpha);
-	}
 }
 
 ASWorldLightingController::ASWorldLightingController()
@@ -304,7 +299,11 @@ void ASWorldLightingController::UpdateLighting(float DeltaSecond)
 	const float MoonHeight = -SunHeight;
 	const float SunVisibilityAlpha = GetSunVisibilityAlpha(SunHeight);
 	const float MoonVisibilityAlpha = GetSunVisibilityAlpha(MoonHeight) * (1.0f - SunVisibilityAlpha);
-	const float DirectSunAlpha = SmoothRange(DirectSunAlphaRangeStart, DirectSunAlphaRangeEnd, SunVisibilityAlpha);
+	const float DirectSunAlpha = SMathUtils::SmoothRange(
+		DirectSunAlphaRangeStart,
+		DirectSunAlphaRangeEnd,
+		SunVisibilityAlpha
+	);
 
 	const float SunYaw = SunYawOffset + DayAlpha * FullCircleYaw;
 	const FRotator SunRotation(-SunHeight * SunHeightToRotation, SunYaw, 0.0f);
@@ -323,7 +322,11 @@ void ASWorldLightingController::UpdateLighting(float DeltaSecond)
 	if (IsValid(MoonLightComponent))
 	{
 		MoonLightComponent->SetWorldRotation(FRotator(-MoonHeight * SunHeightToRotation, SunYaw + MoonYawOffset, 0.0f));
-		MoonLightComponent->SetIntensity(FMath::Max(MoonIntensityMin, NightMoonIntensity) * SmoothRange(MoonVisibilityAlphaRangeStart, MoonVisibilityAlphaRangeEnd, MoonVisibilityAlpha));
+		MoonLightComponent->SetIntensity(FMath::Max(MoonIntensityMin, NightMoonIntensity) *
+			SMathUtils::SmoothRange(
+				MoonVisibilityAlphaRangeStart,
+				MoonVisibilityAlphaRangeEnd,
+				MoonVisibilityAlpha));
 		MoonLightComponent->SetLightColor(NightMoonColor);
 	}
 

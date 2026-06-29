@@ -181,15 +181,8 @@ bool USGameSaveSubsystem::ApplySaveData(const FSGameSaveData& SaveData) const
 		MovementComponent->StopMovementImmediately();
 	}
 
-    InventoryComponent->RestoreFromSaveData(
-        SaveData.Inventory,
-        SGameInstance
-    );
-
-    SurvivalComponent->RestoreVitals(
-        SaveData.CharacterSurvival.Vitals,
-        SaveData.CharacterSurvival.bDead
-    );
+    InventoryComponent->RestoreFromSaveData(SaveData.Inventory, SGameInstance);
+    SurvivalComponent->RestoreVitals(SaveData.CharacterSurvival.Vitals, SaveData.CharacterSurvival.bDead);
 
     return true;
 }

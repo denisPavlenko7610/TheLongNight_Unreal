@@ -41,6 +41,7 @@ private:
 	void BindToGameTime();
 	void UnbindFromGameTime();
 	void HandleGameMinutePassed(float GameMinutes);
+	float GetWarmthBonusC() const;
 	
 	UPROPERTY(VisibleAnywhere, Category = "Survival|Camera")
 	TObjectPtr<UCameraComponent> FirstPersonCamera;
@@ -65,4 +66,7 @@ private:
 
 	UPROPERTY(VisibleAnywhere, Category = "Survival|Vitals")
 	TObjectPtr<USCharacterSurvivalComponent> SurvivalComponent;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Survival|Warmth")
+	float BaseWarmthBonusC = 0.0f;
 };

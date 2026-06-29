@@ -92,57 +92,75 @@ bool USInventoryComponent::AddItem(USItemData* ItemData, int32 Quantity, bool bI
         }
     }
 
+	BroadcastInventoryChanged();
+
     return true;
 }
 
 bool USInventoryComponent::RemoveItem(USItemData* ItemData, int32 Quantity)
 {
-    if (!IsValid(ItemData) || Quantity <= 0)
-    {
-        return false;
-    }
+	if (!IsValid(ItemData) || Quantity <= 0)
+	{
+		return false;
+	}
 
-    for (int32 Index = 0; Index < Items.Num(); ++Index)
-    {
-        FSInventoryEntry& Entry = Items[Index];
+	if (!HasItem(ItemData, Quantity))
+	{
+		return false;
+	}
 
-        if (Entry.ItemData != ItemData)
-        {
-            continue;
-        }
+	int32 RemainingQuantity = Quantity;
 
-        if (Entry.Quantity < Quantity)
-        {
-            return false;
-        }
+	for (int32 Index = Items.Num() - 1; Index >= 0 && RemainingQuantity > 0; --Index)
+	{
+		FSInventoryEntry& Entry = Items[Index];
 
-        Entry.Quantity -= Quantity;
+		if (Entry.ItemData != ItemData)
+		{
+			continue;
+		}
 
-        if (Entry.Quantity <= 0)
-        {
-            Items.RemoveAt(Index);
-        }
+		const int32 QuantityToRemove = FMath::Min(Entry.Quantity, RemainingQuantity);
 
-        return true;
-    }
+		Entry.Quantity -= QuantityToRemove;
+		RemainingQuantity -= QuantityToRemove;
 
-    return false;
+		if (Entry.Quantity <= 0)
+		{
+			Items.RemoveAt(Index);
+		}
+	}
+
+	BroadcastInventoryChanged();
+
+	return true;
 }
 
 bool USInventoryComponent::HasItem(USItemData* ItemData, int32 Quantity) const
 {
-    if (!IsValid(ItemData) || Quantity <= 0)
-    {
-        return false;
-    }
+	if (!IsValid(ItemData) || Quantity <= 0)
+	{
+		return false;
+	}
 
-    const FSInventoryEntry* Entry = FindEntry(ItemData);
-    if (!Entry)
-    {
-        return false;
-    }
+	int32 TotalQuantity = 0;
 
-    return Entry->Quantity >= Quantity;
+	for (const FSInventoryEntry& Entry : Items)
+	{
+		if (Entry.ItemData != ItemData)
+		{
+			continue;
+		}
+
+		TotalQuantity += Entry.Quantity;
+
+		if (TotalQuantity >= Quantity)
+		{
+			return true;
+		}
+	}
+
+	return false;
 }
 
 float USInventoryComponent::GetCurrentWeightKg() const
@@ -183,24 +201,6 @@ const TArray<FSInventoryEntry>& USInventoryComponent::GetItems() const {
     return Items;
 }
 
-const FSInventoryEntry* USInventoryComponent::FindEntry(USItemData* ItemData) const
-{
-    if (!IsValid(ItemData))
-    {
-        return nullptr;
-    }
-
-    for (const FSInventoryEntry& Entry : Items)
-    {
-        if (Entry.ItemData == ItemData)
-        {
-            return &Entry;
-        }
-    }
-
-    return nullptr;
-}
-
 FSInventorySaveData USInventoryComponent::BuildSaveData() const
 {
     FSInventorySaveData SaveData;
@@ -228,48 +228,133 @@ FSInventorySaveData USInventoryComponent::BuildSaveData() const
 }
 
 void USInventoryComponent::RestoreFromSaveData(
-    const FSInventorySaveData& SaveData,
-    const USGameInstance* GameInstance
+	const FSInventorySaveData& SaveData,
+	const USGameInstance* GameInstance
 )
 {
-    Clear();
+	bSuppressInventoryChangedEvent = true;
 
-    if (!IsValid(GameInstance))
-    {
-        UE_LOG(LogTemp, Error, TEXT("RestoreFromSaveData failed: GameInstance is invalid."));
-        return;
-    }
+	Clear();
 
-    for (const FSInventorySaveEntry& SaveEntry : SaveData.Items)
-    {
-        if (SaveEntry.ItemId.IsNone())
-        {
-            continue;
-        }
+	if (!IsValid(GameInstance))
+	{
+		bSuppressInventoryChangedEvent = false;
+		BroadcastInventoryChanged();
 
-        if (SaveEntry.Quantity <= 0)
-        {
-            continue;
-        }
+		UE_LOG(LogTemp, Error, TEXT("RestoreFromSaveData failed: GameInstance is invalid."));
+		return;
+	}
 
-        USItemData* ItemData = GameInstance->FindItemById(SaveEntry.ItemId);
-        if (!IsValid(ItemData))
-        {
-            UE_LOG(
-                LogTemp,
-                Warning,
-                TEXT("RestoreFromSaveData skipped missing item: %s"),
-                *SaveEntry.ItemId.ToString()
-            );
+	for (const FSInventorySaveEntry& SaveEntry : SaveData.Items)
+	{
+		if (SaveEntry.ItemId.IsNone())
+		{
+			continue;
+		}
 
-            continue;
-        }
+		if (SaveEntry.Quantity <= 0)
+		{
+			continue;
+		}
 
-        AddItem(ItemData, SaveEntry.Quantity, true);
-    }
+		USItemData* ItemData = GameInstance->FindItemById(SaveEntry.ItemId);
+		if (!IsValid(ItemData))
+		{
+			UE_LOG(
+				LogTemp,
+				Warning,
+				TEXT("RestoreFromSaveData skipped missing item: %s"),
+				*SaveEntry.ItemId.ToString()
+			);
+
+			continue;
+		}
+
+		AddItem(ItemData, SaveEntry.Quantity, true);
+	}
+
+	bSuppressInventoryChangedEvent = false;
+	BroadcastInventoryChanged();
+}
+
+FSInventoryViewData USInventoryComponent::BuildViewData() const
+{
+	FSInventoryViewData ViewData;
+
+	ViewData.TotalItemCount = GetTotalItemCount();
+	ViewData.CurrentWeightKg = GetCurrentWeightKg();
+	ViewData.MaxWeightKg = GetMaxWeightKg();
+
+	TMap<USItemData*, int32> AggregatedQuantities;
+	TArray<USItemData*> OrderedItems;
+
+	for (const FSInventoryEntry& Entry : Items)
+	{
+		if (!IsValid(Entry.ItemData))
+		{
+			continue;
+		}
+
+		if (Entry.Quantity <= 0)
+		{
+			continue;
+		}
+
+		USItemData* ItemData = Entry.ItemData.Get();
+
+		if (!AggregatedQuantities.Contains(ItemData))
+		{
+			OrderedItems.Add(ItemData);
+		}
+
+		AggregatedQuantities.FindOrAdd(ItemData) += Entry.Quantity;
+	}
+
+	for (USItemData* ItemData : OrderedItems)
+	{
+		if (!IsValid(ItemData))
+		{
+			continue;
+		}
+
+		const int32* Quantity = AggregatedQuantities.Find(ItemData);
+		if (!Quantity)
+		{
+			continue;
+		}
+
+		FSInventoryItemViewData ItemViewData;
+		ItemViewData.ItemId = ItemData->GetItemId();
+		ItemViewData.DisplayName = ItemData->GetDisplayName();
+		ItemViewData.ItemType = ItemData->GetItemType();
+		ItemViewData.Quantity = *Quantity;
+		ItemViewData.UnitWeightKg = ItemData->GetWeightKg();
+		ItemViewData.TotalWeightKg = ItemViewData.UnitWeightKg * static_cast<float>(ItemViewData.Quantity);
+
+		ViewData.Items.Add(ItemViewData);
+	}
+
+	return ViewData;
 }
 
 void USInventoryComponent::Clear()
 {
-    Items.Reset();
+	if (Items.IsEmpty())
+	{
+		return;
+	}
+
+	Items.Reset();
+
+	BroadcastInventoryChanged();
+}
+
+void USInventoryComponent::BroadcastInventoryChanged()
+{
+	if (bSuppressInventoryChangedEvent)
+	{
+		return;
+	}
+
+	OnInventoryChanged.Broadcast();
 }

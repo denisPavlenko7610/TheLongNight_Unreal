@@ -114,6 +114,18 @@ struct THELONGNIGHT_UNREAL_API FSDayNightSettings
 	UPROPERTY(EditAnywhere, Category = "Survival|Day Night", meta = (ClampMin = "0", ClampMax = "59"))
 	int32 NightStartMinute = 0;
 
+	UPROPERTY(EditAnywhere, Category = "Survival|Day Night|Temperature")
+	float NightTemperatureModifierC = -8.0f;
+
+	UPROPERTY(EditAnywhere, Category = "Survival|Day Night|Temperature")
+	float DawnTemperatureModifierC = -5.0f;
+
+	UPROPERTY(EditAnywhere, Category = "Survival|Day Night|Temperature")
+	float DayTemperatureModifierC = 0.0f;
+
+	UPROPERTY(EditAnywhere, Category = "Survival|Day Night|Temperature")
+	float DuskTemperatureModifierC = -4.0f;
+
 	int32 GetDawnStartMinutes() const
 	{
 		return DawnStartHour * STimeConstants::MinutesPerHour + DawnStartMinute;

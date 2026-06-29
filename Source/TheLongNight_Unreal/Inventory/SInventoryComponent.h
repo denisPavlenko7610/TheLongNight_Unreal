@@ -2,11 +2,13 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Inventory/SInventoryViewData.h"
 #include "Save/SSaveTypes.h"
 #include "SInventoryComponent.generated.h"
 
-class USGameInstance;
+DECLARE_MULTICAST_DELEGATE(FSOnInventoryChanged);
 
+class USGameInstance;
 class USItemData;
 
 USTRUCT()
@@ -42,14 +44,20 @@ public:
 	void RestoreFromSaveData(const FSInventorySaveData& SaveData, const USGameInstance* GameInstance);
 	void Clear();
 
+	FSOnInventoryChanged OnInventoryChanged;
+
 	const TArray<FSInventoryEntry>& GetItems() const;
+	FSInventoryViewData BuildViewData() const;
+
 
 private:
-	const FSInventoryEntry* FindEntry(USItemData* ItemData) const;
-	
 	UPROPERTY()
 	TArray<FSInventoryEntry> Items;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Survival|Inventory", meta = (ClampMin = "0.0"))
 	float MaxWeightKg = 30.0f;
+
+	bool bSuppressInventoryChangedEvent = false;
+
+	void BroadcastInventoryChanged();
 };

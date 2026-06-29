@@ -35,6 +35,8 @@ public:
 	const FSWorldTime& GetWorldTime() const;
 	float GetPreciseMinutesSinceMidnight() const;
 	float GetWorldTemperature() const;
+	float GetEffectiveWorldTemperature() const;
+	float GetTimeOfDayTemperatureModifier() const;
 
 	void SetGamePhase(ESGamePhase NewGamePhase);
 	void SetWorldTemperature(float NewWorldTemperature);
@@ -73,4 +75,5 @@ private:
 	void BroadcastTimeEvents(int32 PreviousTotalMinutes, int32 NewTotalMinutes);
 	void RefreshWorldTimeOfDay();
 	ESWorldTimeOfDay DetermineWorldTimeOfDay(const FSWorldTime& Time) const;
+	float DetermineTimeOfDayTemperatureModifier(float MinutesSinceMidnight) const;
 };

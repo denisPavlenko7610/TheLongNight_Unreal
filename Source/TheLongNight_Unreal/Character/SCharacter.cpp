@@ -79,6 +79,11 @@ void ASCharacter::BindToGameTime()
     );
 }
 
+float ASCharacter::GetWarmthBonusC() const
+{
+	return BaseWarmthBonusC;
+}
+
 void ASCharacter::UnbindFromGameTime()
 {
     ASGameState* SGameState = GetWorld() ? GetWorld()->GetGameState<ASGameState>() : nullptr;
@@ -104,10 +109,10 @@ void ASCharacter::HandleGameMinutePassed(float GameMinutes)
     }
 
     FSSurvivalEnvironment Environment;
-    Environment.AmbientTemperatureC = SGameState->GetWorldTemperature();
+	Environment.AmbientTemperatureC = SGameState->GetEffectiveWorldTemperature();
     Environment.WindChillC = 0.0f;
-    Environment.WarmthBonusC = 0.0f;
-
+	Environment.WarmthBonusC = GetWarmthBonusC();
+	
     SurvivalComponent->AdvanceSurvival(GameMinutes, Environment);
 }
 
