@@ -24,6 +24,7 @@ class THELONGNIGHT_UNREAL_API USItemData : public UPrimaryDataAsset
 
 public:
 	FText GetDisplayName() const;
+	FText GetDescription() const;
 	ESItemType GetItemType() const;
 	float GetWeightKg() const;
 
@@ -43,6 +44,9 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Survival|Item")
 	FText DisplayName;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Survival|Item")
+	FText Description;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Survival|Item")
 	ESItemType ItemType = ESItemType::Misc;

@@ -3,10 +3,21 @@
 #include "Engine/World.h"
 #include "Items/SItemRegistryData.h"
 #include "Kismet/GameplayStatics.h"
+#include "Misc/App.h"
+#include "Save/SGameSaveSubsystem.h"
+#include "Save/SOptionsSaveObject.h"
+
+namespace
+{
+	constexpr int32 OptionsSaveUserIndex = 0;
+}
 
 void USGameInstance::Init()
 {
 	Super::Init();
+
+	LoadOptionsSettings();
+	ApplyCustomOptionsSettings();
 
 	UE_LOG(LogTemp, Log, TEXT("USGameInstance initialized."));
 }
@@ -89,4 +100,106 @@ FString USGameInstance::GetActiveSaveSlotName() const
 ESTypes USGameInstance::GetStartGameMode() const
 {
 	return StartGameMode;
+}
+
+bool USGameInstance::SaveActiveSlot()
+{
+	if (ActiveSaveSlotName.IsEmpty())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("SaveActiveSlot failed: ActiveSaveSlotName is empty."));
+		return false;
+	}
+
+	USGameSaveSubsystem* SaveSubsystem = GetSubsystem<USGameSaveSubsystem>();
+	if (!IsValid(SaveSubsystem))
+	{
+		UE_LOG(LogTemp, Error, TEXT("SaveActiveSlot failed: SaveSubsystem is invalid."));
+		return false;
+	}
+
+	return SaveSubsystem->SaveCurrentGame(ActiveSaveSlotName);
+}
+
+bool USGameInstance::LoadActiveSlotInCurrentWorld()
+{
+	if (ActiveSaveSlotName.IsEmpty())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("LoadActiveSlotInCurrentWorld failed: ActiveSaveSlotName is empty."));
+		return false;
+	}
+
+	USGameSaveSubsystem* SaveSubsystem = GetSubsystem<USGameSaveSubsystem>();
+	if (!IsValid(SaveSubsystem))
+	{
+		UE_LOG(LogTemp, Error, TEXT("LoadActiveSlotInCurrentWorld failed: SaveSubsystem is invalid."));
+		return false;
+	}
+
+	return SaveSubsystem->LoadCurrentGame(ActiveSaveSlotName);
+}
+
+const FSGameOptionsSettings& USGameInstance::GetOptionsSettings() const
+{
+	return OptionsSettings;
+}
+
+FSGameOptionsSettings USGameInstance::GetOptionsSettingsCopy() const
+{
+	return OptionsSettings;
+}
+
+void USGameInstance::SetOptionsSettings(const FSGameOptionsSettings& NewSettings, bool bSaveImmediately)
+{
+	OptionsSettings = NewSettings;
+	OptionsSettings.MasterVolume = FMath::Clamp(OptionsSettings.MasterVolume, 0.0f, 1.0f);
+	OptionsSettings.MusicVolume = FMath::Clamp(OptionsSettings.MusicVolume, 0.0f, 1.0f);
+	OptionsSettings.SfxVolume = FMath::Clamp(OptionsSettings.SfxVolume, 0.0f, 1.0f);
+	OptionsSettings.MouseSensitivity = FMath::Clamp(OptionsSettings.MouseSensitivity, 0.1f, 3.0f);
+
+	ApplyCustomOptionsSettings();
+
+	if (bSaveImmediately)
+	{
+		SaveOptionsSettings();
+	}
+}
+
+void USGameInstance::LoadOptionsSettings()
+{
+	USaveGame* LoadedObject = UGameplayStatics::LoadGameFromSlot(GetOptionsSaveSlotName(), OptionsSaveUserIndex);
+	USOptionsSaveObject* LoadedOptions = Cast<USOptionsSaveObject>(LoadedObject);
+	if (!IsValid(LoadedOptions))
+	{
+		OptionsSettings = FSGameOptionsSettings();
+		return;
+	}
+
+	SetOptionsSettings(LoadedOptions->Settings, false);
+}
+
+bool USGameInstance::SaveOptionsSettings() const
+{
+	USOptionsSaveObject* SaveObject = Cast<USOptionsSaveObject>(
+		UGameplayStatics::CreateSaveGameObject(USOptionsSaveObject::StaticClass())
+	);
+
+	if (!IsValid(SaveObject))
+	{
+		UE_LOG(LogTemp, Error, TEXT("SaveOptionsSettings failed: SaveObject is invalid."));
+		return false;
+	}
+
+	SaveObject->Settings = OptionsSettings;
+
+	return UGameplayStatics::SaveGameToSlot(SaveObject, GetOptionsSaveSlotName(), OptionsSaveUserIndex);
+}
+
+void USGameInstance::ApplyCustomOptionsSettings() const
+{
+	FApp::SetVolumeMultiplier(OptionsSettings.MasterVolume);
+}
+
+FString USGameInstance::GetOptionsSaveSlotName()
+{
+	return TEXT("Options");
 }

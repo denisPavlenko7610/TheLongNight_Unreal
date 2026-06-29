@@ -47,6 +47,7 @@ public:
 	FSOnInventoryChanged OnInventoryChanged;
 
 	const TArray<FSInventoryEntry>& GetItems() const;
+	USItemData* FindItemById(FName ItemId) const;
 	FSInventoryViewData BuildViewData() const;
 
 

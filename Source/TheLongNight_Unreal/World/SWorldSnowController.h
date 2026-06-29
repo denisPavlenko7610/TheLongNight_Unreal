@@ -45,31 +45,40 @@ private:
 	TObjectPtr<UMaterialInterface> SnowMaterial;
 
 	UPROPERTY(EditAnywhere, Category = "Survival|Weather", meta = (ClampMin = "1000"))
-	int32 SnowParticleCount = 55000;
+	int32 SnowParticleCount = 18000;
 
 	UPROPERTY(EditAnywhere, Category = "Survival|Weather", meta = (ClampMin = "600.0"))
-	float SnowRadius = 5000.0f;
+	float SnowRadius = 4200.0f;
 
 	UPROPERTY(EditAnywhere, Category = "Survival|Weather", meta = (ClampMin = "500.0"))
-	float SnowSpawnHeight = 3200.0f;
+	float SnowSpawnHeight = 3600.0f;
 
 	UPROPERTY(EditAnywhere, Category = "Survival|Weather", meta = (ClampMin = "0.0"))
-	float SnowFallSpeed = 100.0f;
+	float SnowFallSpeed = 75.0f;
 
 	UPROPERTY(EditAnywhere, Category = "Survival|Weather", meta = (ClampMin = "0.001"))
-	float SnowMinScale = 0.01f;
+	float SnowMinScale = 0.045f;
 
 	UPROPERTY(EditAnywhere, Category = "Survival|Weather", meta = (ClampMin = "0.001"))
-	float SnowMaxScale = 0.02f;
+	float SnowMaxScale = 0.095f;
 
 	UPROPERTY(EditAnywhere, Category = "Survival|Weather", meta = (ClampMin = "1.0"))
-	float SnowRespawnInterval = 8.0f;
+	float SnowRespawnInterval = 4.0f;
 
 	UPROPERTY(EditAnywhere, Category = "Survival|Weather")
 	int32 SnowRandomSeed = 1337;
 
+	UPROPERTY(EditAnywhere, Category = "Survival|Weather")
+	FVector2D SnowWindDirection = FVector2D(1.0f, 0.35f);
+
+	UPROPERTY(EditAnywhere, Category = "Survival|Weather", meta = (ClampMin = "0.0"))
+	float SnowWindSpeed = 35.0f;
+
+	UPROPERTY(EditAnywhere, Category = "Survival|Weather", meta = (ClampMin = "0.0"))
+	float SnowSwayAmplitude = 95.0f;
+
 	UPROPERTY(Transient)
-	TObjectPtr<UStaticMesh> SphereMesh;
+	TObjectPtr<UStaticMesh> SnowflakeMesh;
 
 	UPROPERTY(Transient)
 	TObjectPtr<UMaterialInstanceDynamic> SnowMaterialInstance;
@@ -80,6 +89,8 @@ private:
 	bool bSnowBuilt = false;
 	bool bHasSnowFieldCenter = false;
 	float SnowFallOffset = 0.0f;
+	float SnowWindOffset = 0.0f;
+	float SnowSwayTime = 0.0f;
 	float SnowRespawnTimer = 0.0f;
 	FVector SnowFieldCenter = FVector::ZeroVector;
 };

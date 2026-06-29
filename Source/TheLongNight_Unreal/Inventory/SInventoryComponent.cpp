@@ -201,6 +201,29 @@ const TArray<FSInventoryEntry>& USInventoryComponent::GetItems() const {
     return Items;
 }
 
+USItemData* USInventoryComponent::FindItemById(FName ItemId) const
+{
+	if (ItemId.IsNone())
+	{
+		return nullptr;
+	}
+
+	for (const FSInventoryEntry& Entry : Items)
+	{
+		if (!IsValid(Entry.ItemData))
+		{
+			continue;
+		}
+
+		if (Entry.ItemData->GetItemId() == ItemId)
+		{
+			return Entry.ItemData.Get();
+		}
+	}
+
+	return nullptr;
+}
+
 FSInventorySaveData USInventoryComponent::BuildSaveData() const
 {
     FSInventorySaveData SaveData;
@@ -326,6 +349,7 @@ FSInventoryViewData USInventoryComponent::BuildViewData() const
 		FSInventoryItemViewData ItemViewData;
 		ItemViewData.ItemId = ItemData->GetItemId();
 		ItemViewData.DisplayName = ItemData->GetDisplayName();
+		ItemViewData.Description = ItemData->GetDescription();
 		ItemViewData.ItemType = ItemData->GetItemType();
 		ItemViewData.Quantity = *Quantity;
 		ItemViewData.UnitWeightKg = ItemData->GetWeightKg();

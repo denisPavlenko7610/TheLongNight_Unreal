@@ -5,6 +5,11 @@ FText USItemData::GetDisplayName() const
 	return DisplayName;
 }
 
+FText USItemData::GetDescription() const
+{
+	return Description;
+}
+
 ESItemType USItemData::GetItemType() const
 {
 	return ItemType;

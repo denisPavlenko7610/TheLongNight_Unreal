@@ -16,6 +16,9 @@ struct THELONGNIGHT_UNREAL_API FSInventoryItemViewData
 	FText DisplayName;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Survival|Inventory")
+	FText Description;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Survival|Inventory")
 	ESItemType ItemType = ESItemType::Misc;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Survival|Inventory")
